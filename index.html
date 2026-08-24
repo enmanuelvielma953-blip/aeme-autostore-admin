@@ -10,8 +10,6 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="AEME Pro" />
     <meta name="description" content="App interna para taller: órdenes, caja, clientes y seguimiento." />
-    <link rel="manifest" href="./manifest.webmanifest" />
-    <link rel="apple-touch-icon" href="./icons/icon-192.png" />
     <style>
         :root {
             --bg: #0b0f14;
@@ -895,10 +893,18 @@
                                 data-orders-filter="proceso" onclick="setOrdersFilter('proceso', this)">En
                                 proceso</button><button class="tab" data-orders-filter="listo"
                                 onclick="setOrdersFilter('listo', this)">Listos</button></div>
-                        <div class="toolbar"><input id="orderSearch" placeholder="Buscar cliente, auto o matrícula..."
-                                oninput="renderOrders()" /><button class="sec"
-                                onclick="openSettings()">Configuración</button><button class="sec"
-                                onclick="refreshCloud()">Sincronizar</button></div>
+                        <div class="toolbar">
+                            <input id="orderSearch" placeholder="Buscar cliente, auto o matrícula..."
+                                oninput="renderOrders()" />
+
+                            <button class="sec" onclick="openSettings()">
+                                Configuración
+                            </button>
+
+                            <button class="sec" onclick="refreshCloud()">
+                                Sincronizar
+                            </button>
+                        </div>
                         <div id="ordersList" class="list"></div>
                     </div>
                 </div>
@@ -968,6 +974,31 @@
     </div>
     <div id="settingsSheet" class="sheet">
         <div class="wrap">
+            <div class="settings-section">
+                <h3>Cuenta</h3>
+
+                <div id="authStatus">
+                    No estás registrado.
+                </div>
+
+                <input id="authEmail" type="email" placeholder="Email">
+
+                <input id="authPassword" type="password" placeholder="Contraseña">
+
+                <div class="btns">
+                    <button class="good" type="button" onclick="registerUser()">
+                        Registrarme
+                    </button>
+
+                    <button class="sec" type="button" onclick="loginUser()">
+                        Iniciar sesión
+                    </button>
+
+                    <button class="bad" type="button" onclick="logoutUser()">
+                        Cerrar sesión
+                    </button>
+                </div>
+            </div>
             <div class="sheet-head">
                 <h3>Configuración</h3><button class="sec" onclick="closeSettings()">Cerrar</button>
             </div>
@@ -1034,8 +1065,9 @@
         </button>
 
     </div>
-    <script src="./js/images.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="./js/supabase.js"></script>
+    <script src="./js/images.js"></script>
     <script>
         const fmt = new Intl.NumberFormat('es-UY', { style: 'currency', currency: 'UYU', maximumFractionDigits: 0 });
         const STORAGE_KEY = 'aeme_pro_state_v1', SETTINGS_KEY = 'aeme_pro_cloud_v1';
@@ -1085,6 +1117,30 @@
             data.cash = data.cash || [];
 
             return data;
+        }
+        async function registerUser() {
+            const email = document.getElementById('authEmail').value.trim();
+            const password = document.getElementById('authPassword').value;
+
+            if (!email || !password) {
+                alert('Ingresá email y contraseña.');
+                return;
+            }
+
+            const { data, error } = await supabaseClient.auth.signUp({
+                email,
+                password
+            });
+
+            if (error) {
+                console.error(error);
+                alert('Error: ' + error.message);
+                return;
+            }
+
+            console.log('Usuario creado:', data.user);
+
+            alert('Usuario registrado correctamente.');
         }
         function saveState() {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); renderAll()
