@@ -1,0 +1,1835 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <title>AEME Pro</title>
+    <meta name="theme-color" content="#0f141b" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="AEME Pro" />
+    <meta name="description" content="App interna para taller: órdenes, caja, clientes y seguimiento." />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+    <style>
+        :root {
+            --bg: #0b0f14;
+            --bg2: #101722;
+            --panel: #141d29;
+            --panel2: #172231;
+            --line: #253244;
+            --text: #f4f7fb;
+            --muted: #99a7b7;
+            --gold: #e7c46a;
+            --green: #4fd08f;
+            --red: #ff7070;
+            --orange: #ffb457;
+            --blue: #7fb2ff;
+            --shadow: 0 24px 60px rgba(0, 0, 0, .34);
+            --r: 22px;
+            --max: 1280px
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent
+        }
+
+        html,
+        body {
+            margin: 0;
+            height: 100%
+        }
+
+        body {
+            font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+            background: radial-gradient(circle at top left, rgba(231, 196, 106, .16), transparent 28%), radial-gradient(circle at 92% 18%, rgba(79, 208, 143, .10), transparent 24%), linear-gradient(180deg, #0b0f14, #101722 80%);
+            color: var(--text)
+        }
+
+        .app {
+            max-width: var(--max);
+            margin: 0 auto;
+            padding: env(safe-area-inset-top) 14px calc(90px + env(safe-area-inset-bottom)) 14px
+        }
+
+        .top {
+            position: sticky;
+            top: 0;
+            z-index: 30;
+            padding-top: 10px;
+            margin-bottom: 14px;
+            backdrop-filter: blur(16px);
+            background: linear-gradient(180deg, rgba(11, 15, 20, .88), rgba(11, 15, 20, .56))
+        }
+
+        .top-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 4px 14px
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px
+        }
+
+        .logo {
+            width: 46px;
+            height: 46px;
+            border-radius: 16px;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(145deg, #fff0be, #b98b2e);
+            color: #0b1016;
+            font-weight: 1000;
+            font-size: 24px;
+            box-shadow: 0 12px 32px rgba(231, 196, 106, .26)
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 22px;
+            letter-spacing: -.6px
+        }
+
+        .sub {
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 2px
+        }
+
+        .badge {
+            padding: 8px 10px;
+            border-radius: 999px;
+            background: #1a2635;
+            border: 1px solid var(--line);
+            color: var(--muted);
+            font-size: 12px;
+            white-space: nowrap
+        }
+
+        .cloud-on {
+            color: #baf3d4
+        }
+
+        .grid-cards {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+            margin: 10px 0 14px
+        }
+
+        .card,
+        .panel,
+        .sheet {
+            background: linear-gradient(180deg, rgba(255, 255, 255, .045), rgba(255, 255, 255, .018)), var(--panel);
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: var(--r);
+            box-shadow: var(--shadow)
+        }
+
+        .card {
+            padding: 16px
+        }
+
+        .card .label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            color: var(--muted)
+        }
+
+        .card .value {
+            margin-top: 8px;
+            font-size: 26px;
+            font-weight: 1000;
+            letter-spacing: -.8px
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 14px
+        }
+
+        .panel {
+            padding: 16px
+        }
+
+        .panel h2 {
+            font-size: 18px;
+            margin: 0 0 14px;
+            letter-spacing: -.3px
+        }
+
+        .field {
+            margin-bottom: 12px
+        }
+
+        label {
+            display: block;
+            margin: 0 0 7px;
+            color: var(--muted);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: .75px
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            border: 1px solid var(--line);
+            background: #0d141e;
+            color: var(--text);
+            border-radius: 14px;
+            padding: 12px 13px;
+            font-size: 14px;
+            outline: none
+        }
+
+        .order-status-select {
+            width: 123px;
+            height: 44px;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: rgba(231, 196, 106, .78);
+            box-shadow: 0 0 0 4px rgba(231, 196, 106, .08)
+        }
+
+        textarea {
+            min-height: 88px;
+            resize: vertical
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px
+        }
+
+        .row3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px
+        }
+
+        .services {
+            display: grid;
+            gap: 8px;
+            max-height: 220px;
+            overflow: auto;
+            padding-right: 4px
+        }
+
+        .service {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 11px;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            background: #0e1621;
+            cursor: pointer
+        }
+
+        .service.active {
+            border-color: rgba(231, 196, 106, .88);
+            background: rgba(231, 196, 106, .08)
+        }
+
+        .service small {
+            color: var(--muted)
+        }
+
+        .btns {
+            display: flex;
+            gap: 9px;
+            flex-wrap: wrap
+        }
+
+        button {
+            border: 0;
+            background: var(--gold);
+            color: #0d1219;
+            padding: 11px 14px;
+            border-radius: 14px;
+            font-weight: 900;
+            cursor: pointer;
+            letter-spacing: -.2px
+        }
+
+        button.sec {
+            background: #223044;
+            color: var(--text);
+            border: 1px solid var(--line)
+        }
+
+        button.good {
+            background: var(--green);
+            color: #07110b
+        }
+
+        button.warn {
+            background: var(--orange);
+            color: #1a0d00
+        }
+
+        button.bad {
+            background: transparent;
+            color: var(--red);
+            border: 1px solid rgba(255, 112, 112, .45)
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+            flex-wrap: wrap
+        }
+
+        .tab {
+            padding: 10px 12px;
+            border-radius: 12px;
+            background: #0f1722;
+            border: 1px solid var(--line);
+            color: var(--muted);
+            cursor: pointer;
+            font-weight: 800
+        }
+
+        .tab.active {
+            background: rgba(231, 196, 106, .10);
+            border-color: rgba(231, 196, 106, .60);
+            color: #ffebaf
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 10px
+        }
+
+        .toolbar>* {
+            flex: 1 1 180px
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 7px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 900
+        }
+
+        .nuevo {
+            background: rgba(255, 180, 87, .14);
+            color: #ffcf91
+        }
+
+        .proceso {
+            background: rgba(127, 178, 255, .12);
+            color: #bdd7ff
+        }
+
+        .listo {
+            background: rgba(79, 208, 143, .14);
+            color: #b4f2cf
+        }
+
+        .entregado {
+            background: rgba(153, 167, 183, .18);
+            color: #dde5ef
+        }
+
+        .mini {
+            font-size: 12px;
+            color: var(--muted)
+        }
+
+        .list {
+            display: grid;
+            gap: 10px
+        }
+
+        .item {
+            display: grid;
+            grid-template-columns: 1.35fr .95fr .75fr auto;
+            gap: 10px;
+            align-items: start;
+            padding: 14px;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            background: #0e1621
+        }
+
+        .title {
+            font-size: 15px;
+            font-weight: 900
+        }
+
+        .money {
+            font-weight: 1000;
+            color: #ffebaf
+        }
+
+        .empty {
+            padding: 24px;
+            text-align: center;
+            color: var(--muted);
+            border: 1px dashed var(--line);
+            border-radius: 18px;
+            background: #0d141e
+        }
+
+        .sheet {
+            position: fixed;
+            inset: auto 0 0 0;
+            z-index: 50;
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+            max-height: 82vh;
+            overflow: auto;
+            transform: translateY(110%);
+            transition: .24s ease
+        }
+
+        .sheet.open {
+            transform: translateY(0)
+        }
+
+        .sheet .wrap {
+            max-width: var(--max);
+            margin: 0 auto;
+            padding: 16px 14px calc(22px + env(safe-area-inset-bottom))
+        }
+
+        .sheet-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px
+        }
+
+        .sheet-head h3 {
+            margin: 0;
+            font-size: 19px
+        }
+
+        .nav {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 40;
+            padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+            background: rgba(10, 14, 20, .92);
+            backdrop-filter: blur(16px);
+            border-top: 1px solid rgba(255, 255, 255, .05)
+        }
+
+        .nav .inner {
+            max-width: var(--max);
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px
+        }
+
+        .nav-btn {
+            text-align: center;
+            padding: 10px 8px;
+            border: 1px solid var(--line);
+            background: #0f1722;
+            color: var(--muted);
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 900;
+            cursor: pointer
+        }
+
+        .nav-btn.active {
+            background: rgba(231, 196, 106, .10);
+            color: #ffebaf;
+            border-color: rgba(231, 196, 106, .55)
+        }
+
+        .stack {
+            display: grid;
+            gap: 14px
+        }
+
+        .hidden {
+            display: none !important
+        }
+
+        .install-tip {
+            margin-top: 10px;
+            padding: 10px 12px;
+            border-radius: 14px;
+            background: #0f1722;
+            border: 1px solid var(--line);
+            color: var(--muted);
+            font-size: 12px
+        }
+
+        .small-note {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 8px
+        }
+
+        .sync-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: #6b7280;
+            margin-right: 6px
+        }
+
+        .sync-dot.ok {
+            background: var(--green)
+        }
+
+        .mt8 {
+            margin-top: 8px
+        }
+
+        @media (max-width:1024px) {
+            .content {
+                grid-template-columns: 1fr
+            }
+        }
+
+        @media (max-width:800px) {
+            .grid-cards {
+                grid-template-columns: repeat(2, minmax(0, 1fr))
+            }
+
+            .item {
+                grid-template-columns: 1fr
+            }
+        }
+
+        @media (max-width:580px) {
+            .app {
+                padding-left: 10px;
+                padding-right: 10px
+            }
+
+            .row,
+            .row3 {
+                grid-template-columns: 1fr
+            }
+
+            .grid-cards {
+                grid-template-columns: 1fr 1fr
+            }
+
+            h1 {
+                font-size: 20px
+            }
+
+            .card .value {
+                font-size: 22px
+            }
+        }
+
+        .image-drop-zone {
+            border: 2px dashed var(--border);
+            border-radius: 16px;
+            padding: 28px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s ease;
+            background: var(--surface);
+        }
+
+        .image-drop-zone:hover {
+            border-color: var(--primary);
+        }
+
+        .image-drop-zone.dragover {
+            border-color: var(--primary);
+            background: var(--primary-soft);
+        }
+
+        .image-drop-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .image-drop-zone strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .image-drop-zone span {
+            display: block;
+            font-size: 13px;
+            opacity: 0.7;
+        }
+
+        .image-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .image-preview-item {
+            position: relative;
+            aspect-ratio: 1;
+            overflow: hidden;
+            border-radius: 12px;
+            background: var(--surface);
+        }
+
+        .image-preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-remove-btn {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+
+            width: 30px;
+            height: 30px;
+
+            padding: 0;
+
+            display: grid;
+            place-items: center;
+
+            border-radius: 999px;
+
+            background: rgba(0, 0, 0, .72);
+            color: #fff;
+
+            border: 1px solid rgba(255, 255, 255, .25);
+
+            font-size: 22px;
+            line-height: 1;
+
+            cursor: pointer;
+
+            z-index: 2;
+        }
+
+        .image-remove-btn:hover {
+            background: var(--red);
+            border-color: var(--red);
+        }
+
+        .order-images-wrapper {
+            margin-top: 10px;
+        }
+
+        .order-images {
+            display: grid;
+            grid-template-columns: repeat(2, 300px);
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .order-image-thumb {
+            width: 300px;
+            height: 225px;
+            margin: 2px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            display: block;
+        }
+
+        .order-images.hidden {
+            display: none;
+        }
+
+        .order-image-item {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+
+        .order-image-item img {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: cover;
+            cursor: pointer;
+            transition: transform .15s ease;
+        }
+
+        .order-image-item img:hover {
+            transform: scale(1.03);
+        }
+
+        .order-images-toggle {
+            width: 132px;
+            height: 43px;
+            margin-top: 10px;
+        }
+
+        .image-lightbox {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: rgba(0, 0, 0, .92);
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 30px;
+        }
+
+        .image-lightbox.hidden {
+            display: none;
+        }
+
+        .lightbox-content {
+            position: relative;
+
+            max-width: calc(100vw - 180px);
+            max-height: calc(100vh - 80px);
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #lightboxImage {
+            max-width: 100%;
+            max-height: calc(100vh - 120px);
+
+            object-fit: contain;
+
+            border-radius: 10px;
+
+            box-shadow: 0 20px 70px rgba(0, 0, 0, .6);
+        }
+
+        .lightbox-close,
+        .lightbox-prev,
+        .lightbox-next {
+            position: fixed;
+
+            z-index: 10001;
+
+            width: 46px;
+            height: 46px;
+
+            padding: 0;
+
+            border-radius: 50%;
+
+            background: rgba(20, 25, 32, .85);
+            color: white;
+
+            border: 1px solid rgba(255, 255, 255, .2);
+
+            font-size: 30px;
+            line-height: 1;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lightbox-close {
+            top: 20px;
+            right: 20px;
+        }
+
+        .lightbox-prev {
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .lightbox-next {
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .lightbox-close:hover,
+        .lightbox-prev:hover,
+        .lightbox-next:hover {
+            background: rgba(231, 196, 106, .9);
+            color: #0d1219;
+        }
+
+        .lightbox-counter {
+            margin-top: 10px;
+
+            color: white;
+
+            font-size: 13px;
+            font-weight: 700;
+
+            background: rgba(0, 0, 0, .5);
+
+            padding: 5px 10px;
+            border-radius: 999px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <div class="top">
+            <div class="top-inner">
+                <div class="brand">
+                    <div class="logo">A</div>
+                    <div>
+                        <h1>AEME Pro</h1>
+                        <div class="sub">Órdenes, caja, clientes y seguimiento del taller</div>
+                    </div>
+                </div>
+                <div id="cloudBadge" class="badge"><span class="sync-dot"></span>Modo local</div>
+            </div>
+        </div>
+        <section id="dashboardView" class="view">
+            <div class="grid-cards">
+                <div class="card">
+                    <div class="label">Facturación abierta</div>
+                    <div id="kpiOpen" class="value">$ 0</div>
+                </div>
+                <div class="card">
+                    <div class="label">Cobrado</div>
+                    <div id="kpiPaid" class="value">$ 0</div>
+                </div>
+                <div class="card">
+                    <div class="label">Autos activos</div>
+                    <div id="kpiActive" class="value">0</div>
+                </div>
+                <div class="card">
+                    <div class="label">Caja del día</div>
+                    <div id="kpiCash" class="value">$ 0</div>
+                </div>
+            </div>
+            <div class="content">
+                <div id="orderFormPanel" class="panel">
+                    <h2>Nueva orden</h2>
+                    <form id="orderForm">
+                        <div class="row">
+                            <div class="field"><label>Cliente</label><input id="clientName" required
+                                    placeholder="Ej: Marcos" /></div>
+                            <div class="field"><label>Teléfono</label><input id="clientPhone" placeholder="099..." />
+                            </div>
+                        </div>
+                        <div class="row3">
+                            <div class="field"><label>Marca</label><input id="brand" required placeholder="BMW" /></div>
+                            <div class="field"><label>Modelo</label><input id="model" required placeholder="X6 M" />
+                            </div>
+                            <div class="field"><label>Matrícula</label><input id="plate" placeholder="ABC 1234" /></div>
+                        </div>
+                        <div class="row">
+                            <div class="field"><label>Estado</label><select id="status">
+                                    <option value="nuevo">Nuevo</option>
+                                    <option value="proceso">En proceso</option>
+                                    <option value="listo">Listo para entregar</option>
+                                    <option value="entregado">Entregado</option>
+                                </select></div>
+                            <div class="field"><label>Entrega prometida</label><input id="dueDate" type="date" /></div>
+                        </div>
+                        <div class="field"><label>Servicios sugeridos</label>
+                            <div id="servicesList" class="services"></div>
+                        </div>
+                        <div class="row">
+                            <div class="field"><label>Total</label><input id="totalAmount" type="number" step="100"
+                                    min="0" required /></div>
+                            <div class="field"><label>Cobrado / Seña</label><input id="paidAmount" type="number"
+                                    step="100" min="0" value="0" /></div>
+                        </div>
+                        <div class="field"><label>Notas</label><textarea id="notes"
+                                placeholder="Ej: micro pintura, llantas, lavado motor, etc."></textarea>
+                            <div class="field">
+                                <label>Imágenes</label>
+
+                                <div id="imageDropZone" class="image-drop-zone">
+                                    <div class="image-drop-icon">📷</div>
+
+                                    <strong>Arrastrá las imágenes aquí</strong>
+
+                                    <span>o hacé clic para seleccionarlas</span>
+
+                                    <input id="imageInput" type="file" accept="image/*" multiple hidden>
+                                </div>
+
+                                <div id="imagePreview" class="image-preview"></div>
+                            </div>
+                        </div>
+                        <div class="btns"><button class="good" type="submit">Guardar orden</button><button class="sec"
+                                type="button" onclick="clearOrderForm()">Limpiar</button></div>
+                        <div class="small-note">En local funciona sin internet. Si activás nube, sincroniza entre iPhone
+                            y PC.</div>
+                    </form>
+                </div>
+                <div class="panel stack">
+                    <div>
+                        <div class="tabs"><button class="tab active" data-orders-filter="todos"
+                                onclick="setOrdersFilter('todos', this)">Todos</button><button class="tab"
+                                data-orders-filter="nuevo"
+                                onclick="setOrdersFilter('nuevo', this)">Nuevos</button><button class="tab"
+                                data-orders-filter="proceso" onclick="setOrdersFilter('proceso', this)">En
+                                proceso</button><button class="tab" data-orders-filter="listo"
+                                onclick="setOrdersFilter('listo', this)">Listos</button></div>
+                        <div class="toolbar"><input id="orderSearch" placeholder="Buscar cliente, auto o matrícula..."
+                                oninput="renderOrders()" /><button class="sec"
+                                onclick="openSettings()">Configuración</button><button class="sec"
+                                onclick="refreshCloud()">Sincronizar</button></div>
+                        <div id="ordersList" class="list"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="install-tip">En iPhone: abrí el link en Safari y tocá <strong>Compartir → Agregar a pantalla de
+                    inicio</strong>. En PC podés usarlo desde navegador o instalarlo si el navegador lo ofrece.</div>
+        </section>
+        <section id="ordersView" class="view hidden">
+            <div class="panel">
+                <h2>Órdenes</h2>
+                <div class="toolbar"><input id="orderSearch2" placeholder="Buscar..."
+                        oninput="syncSearch('orderSearch2','orderSearch'); renderOrders()" /><select
+                        id="orderStatusFilter2" onchange="setOrdersFilter(this.value)">
+                        <option value="todos">Todos</option>
+                        <option value="nuevo">Nuevo</option>
+                        <option value="proceso">En proceso</option>
+                        <option value="listo">Listo</option>
+                        <option value="entregado">Entregado</option>
+                    </select><button onclick="showView('dashboard')">Nueva orden</button></div>
+                <div id="ordersListFull" class="list"></div>
+            </div>
+        </section>
+        <section id="cashView" class="view hidden">
+            <div class="panel">
+                <h2>Caja</h2>
+                <div class="row">
+                    <div class="field"><label>Tipo</label><select id="cashType">
+                            <option value="ingreso">Ingreso</option>
+                            <option value="egreso">Egreso</option>
+                        </select></div>
+                    <div class="field"><label>Método</label><input id="cashMethod"
+                            placeholder="Efectivo, transferencia..." />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="field"><label>Categoría</label><input id="cashCategory"
+                            placeholder="Lavado, insumos, sueldo..." /></div>
+                    <div class="field"><label>Monto</label><input id="cashAmount" type="number" min="0" step="100" />
+                    </div>
+                </div>
+                <div class="field"><label>Detalle</label><input id="cashDescription"
+                        placeholder="Ej: cobro BMW, compra productos..." /></div>
+                <div class="btns"><button class="good" onclick="addCashEntry()">Guardar movimiento</button><button
+                        class="sec" onclick="clearCashForm()">Limpiar</button></div>
+                <div class="small-note">Caja del día = ingresos - egresos cargados hoy.</div>
+            </div>
+            <div class="panel mt8">
+                <h2>Movimientos</h2>
+                <div class="toolbar"><input id="cashSearch" placeholder="Buscar en caja..."
+                        oninput="renderCash()" /><select id="cashFilter" onchange="renderCash()">
+                        <option value="">Todos</option>
+                        <option value="ingreso">Ingresos</option>
+                        <option value="egreso">Egresos</option>
+                    </select></div>
+                <div id="cashList" class="list"></div>
+            </div>
+        </section>
+        <section id="clientsView" class="view hidden">
+            <div class="panel">
+                <h2>Clientes</h2>
+                <div class="toolbar"><input id="clientSearch" placeholder="Buscar clientes..."
+                        oninput="renderClients()" />
+                </div>
+                <div id="clientsList" class="list"></div>
+            </div>
+        </section>
+    </div>
+    <div id="settingsSheet" class="sheet">
+        <div class="wrap">
+            <div class="sheet-head">
+                <h3>Configuración</h3><button class="sec" onclick="closeSettings()">Cerrar</button>
+            </div>
+            <div class="panel">
+                <h2>Respaldo</h2>
+                <div class="btns"><button class="sec" onclick="exportBackup()">Exportar backup</button><button
+                        class="sec" onclick="document.getElementById('importBackup').click()">Importar
+                        backup</button><input hidden type="file" id="importBackup" accept="application/json"
+                        onchange="importBackup(event)" /></div>
+            </div>
+            <div class="panel mt8">
+                <h2>Sincronización en nube</h2>
+                <div class="field"><label>URL de Supabase</label><input id="supabaseUrl"
+                        placeholder="https://TU-PROYECTO.supabase.co" /></div>
+                <div class="field"><label>Anon key</label><textarea id="supabaseKey"
+                        placeholder="Pegá acá la anon key de Supabase"></textarea></div>
+                <div class="row">
+                    <div class="field"><label>Activar nube</label><select id="cloudEnabled">
+                            <option value="false">No</option>
+                            <option value="true">Sí</option>
+                        </select></div>
+                    <div class="field"><label>Último sync</label><input id="lastSync" disabled /></div>
+                </div>
+                <div class="btns"><button onclick="saveCloudSettings()">Guardar configuración</button><button
+                        class="good" onclick="testCloud()">Probar conexión</button><button class="sec"
+                        onclick="refreshCloud()">Traer datos de
+                        nube</button></div>
+                <div class="small-note">Esta versión ya está pronta para sincronizar entre PC y iPhone, pero necesitás
+                    crear tu
+                    proyecto de Supabase y pegar <strong>URL + anon key</strong>. En la carpeta te dejé un archivo
+                    <strong>schema.sql</strong> para crear las tablas.
+                </div>
+            </div>
+            <div class="panel mt8">
+                <h2>Mantenimiento</h2>
+                <div class="btns"><button class="bad" onclick="wipeLocal()">Borrar datos locales</button></div>
+            </div>
+        </div>
+    </div>
+    <div class="nav">
+        <div class="inner"><button class="nav-btn active" data-view="dashboard"
+                onclick="showView('dashboard', this)">Inicio</button><button class="nav-btn" data-view="orders"
+                onclick="showView('orders', this)">Órdenes</button><button class="nav-btn" data-view="cash"
+                onclick="showView('cash', this)">Caja</button><button class="nav-btn" data-view="clients"
+                onclick="showView('clients', this)">Clientes</button></div>
+    </div>
+    <div id="imageLightbox" class="image-lightbox hidden">
+
+        <button type="button" class="lightbox-close" onclick="closeImageLightbox()">
+            ✕
+        </button>
+
+        <button type="button" class="lightbox-prev" onclick="previousLightboxImage()">
+            ‹
+        </button>
+
+        <div class="lightbox-content">
+            <img id="lightboxImage" src="" alt="">
+            <div id="lightboxCounter" class="lightbox-counter"></div>
+        </div>
+
+        <button type="button" class="lightbox-next" onclick="nextLightboxImage()">
+            ›
+        </button>
+
+    </div>
+    <script src="./js/images.js"></script>
+    <script>
+        const fmt = new Intl.NumberFormat('es-UY', { style: 'currency', currency: 'UYU', maximumFractionDigits: 0 });
+        const STORAGE_KEY = 'aeme_pro_state_v1', SETTINGS_KEY = 'aeme_pro_cloud_v1';
+        let ordersFilter = 'todos', selectedServiceIds = [], editingOrderId = null;
+
+        const presetServices = [
+            { id: 'lavado-comun', name: 'Lavado completo común', price: 750 },
+            { id: 'lavado-cera', name: 'Lavado completo con cera', price: 1000 },
+            { id: 'interior', name: 'Limpieza interior y asientos', price: 3500 },
+            { id: 'descontaminado', name: 'Lavado + descontaminado', price: 5000 },
+            { id: 'motor', name: 'Limpieza de motor + barnizado', price: 3500 },
+            { id: 'pulido-1', name: 'Pulido paso 1 + abrillantado', price: 10000 },
+            { id: 'ceramico-1', name: 'Corrección intensa + cerámico 1 año', price: 18000 },
+            { id: 'ceramico-3', name: 'Pulido 2 pasos + cerámico 3 años', price: 23000 },
+            { id: 'llantas', name: 'Pintar 4 llantas', price: 8000 },
+            { id: 'parabrisas', name: 'Reparación de parabrisas + sellado', price: 3500 },
+            { id: 'polarizado', name: 'Polarizado', price: 6500 },
+            { id: 'ppf', name: 'PPF / protección por pieza', price: 9000 },
+            { id: 'micro-pintura', name: 'Micro pintura / retoques', price: 4500 },
+            { id: 'pdr', name: 'Saca bollo sin pintar', price: 4500 }
+        ];
+
+        let state = loadState(), cloud = loadCloudSettings();
+        function loadState() {
+            const raw = localStorage.getItem(STORAGE_KEY);
+
+            if (!raw) {
+                return {
+                    orders: [],
+                    cash: []
+                };
+            }
+
+            const data = JSON.parse(raw);
+
+            data.orders = (data.orders || []).map(order => ({
+                ...order,
+                status: ['nuevo', 'proceso', 'listo', 'entregado'].includes(order.status)
+                    ? order.status
+                    : 'nuevo',
+
+                images: Array.isArray(order.images)
+                    ? order.images
+                    : []
+            }));
+
+            data.cash = data.cash || [];
+
+            return data;
+        }
+        function saveState() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); renderAll()
+        }
+        function loadCloudSettings() {
+            const raw = localStorage.getItem(SETTINGS_KEY); return raw ? JSON.parse(raw) : { supabaseUrl: '', supabaseKey: '', cloudEnabled: false, lastSync: '' }
+        }
+        function saveCloudSettingsLocal() {
+            localStorage.setItem(SETTINGS_KEY, JSON.stringify(cloud)); paintCloudBadge()
+        }
+        function uid() {
+            return window.crypto?.randomUUID ? crypto.randomUUID() : 'id-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9)
+        }
+        function money(v) {
+            return fmt.format(Number(v || 0))
+        }
+        function todayLocalISO() {
+            const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10)
+        }
+        function nowIso() {
+            return new Date().toISOString()
+        }
+        function statusLabel(s) {
+            return ({
+                nuevo: 'Nuevo',
+                proceso: 'En proceso',
+                listo: 'Listo',
+                entregado: 'Entregado'
+            })[s] || 'Nuevo';
+        }
+        function servicesMarkup() {
+            servicesList.innerHTML = presetServices.map(s => `<div class="service ${selectedServiceIds.includes(s.id) ? 'active' : ''}" onclick="toggleService('${s.id}')"><div><strong>${s.name}</strong><br><small>${money(s.price)}</small></div><div>${selectedServiceIds.includes(s.id) ? '✓' : '+'}</div></div>`).join('')
+        }
+        function toggleService(id) {
+            selectedServiceIds = selectedServiceIds.includes(id) ? selectedServiceIds.filter(x => x !== id) : [...selectedServiceIds, id];
+            const selected = presetServices.filter(s => selectedServiceIds.includes(s.id));
+            totalAmount.value = selected.reduce((a, s) => a + s.price, 0) || '';
+            notes.value = selected.map(s => s.name).join(', '); servicesMarkup()
+        }
+        function clearOrderForm() {
+            editingOrderId = null;
+            selectedServiceIds = [];
+
+            pendingImages = [];
+
+            orderForm.reset();
+            paidAmount.value = 0;
+
+            servicesMarkup();
+            renderImagePreview();
+        }
+        orderForm.addEventListener(
+            'submit', async e => {
+                e.preventDefault();
+                const order = {
+                    id: editingOrderId || uid(),
+
+                    created_at: editingOrderId
+                        ? (
+                            state.orders.find(o => o.id === editingOrderId)?.created_at || nowIso()
+                        )
+                        : nowIso(),
+
+                    updated_at: nowIso(),
+
+                    client_name: clientName.value.trim(),
+                    phone: clientPhone.value.trim(),
+
+                    brand: brand.value.trim(),
+                    model: model.value.trim(),
+                    plate: plate.value.trim(),
+
+                    status: status.value || 'nuevo',
+
+                    total: Number(totalAmount.value || 0),
+                    paid: Number(paidAmount.value || 0),
+
+                    due_date: dueDate.value || null,
+
+                    notes: notes.value.trim(),
+
+                    services: presetServices.filter(
+                        s => selectedServiceIds.includes(s.id)
+                    ),
+
+                    images: [...pendingImages],
+
+                    archived: false
+                };
+                const i = state.orders.findIndex(o => o.id === order.id);
+                if (i >= 0) state.orders[i] = order;
+                else state.orders.unshift(order);
+                saveState();
+                if (cloud.cloudEnabled) await pushOrders([order]);
+                clearOrderForm();
+                showView('orders')
+            });
+        function editOrder(id) {
+            const o = state.orders.find(x => x.id === id);
+
+            if (!o) return;
+
+            editingOrderId = id;
+
+            clientName.value = o.client_name || '';
+            clientPhone.value = o.phone || '';
+            brand.value = o.brand || '';
+            model.value = o.model || '';
+            plate.value = o.plate || '';
+            status.value = o.status || 'nuevo';
+            dueDate.value = o.due_date || '';
+            totalAmount.value = o.total || '';
+            paidAmount.value = o.paid || 0;
+            notes.value = o.notes || '';
+
+            selectedServiceIds = (o.services || []).map(s => s.id);
+
+            pendingImages = [...(o.images || [])];
+
+            servicesMarkup();
+            renderImagePreview();
+
+            showView('dashboard');
+
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+        async function markPaid(id) {
+            const o = state.orders.find(x => x.id === id);
+            if (!o) return;
+            o.paid = o.total;
+            if (o.status === 'nuevo') o.status = 'proceso';
+            o.updated_at = nowIso();
+            saveState();
+            if (cloud.cloudEnabled) await pushOrders([o])
+        }
+        async function updateOrderStatus(id, newStatus) {
+            const o = state.orders.find(x => x.id === id);
+            if (!o) return; o.status = newStatus;
+            o.updated_at = nowIso();
+            saveState(); if (cloud.cloudEnabled) await pushOrders([o])
+        }
+        async function deleteOrder(id) {
+            if (!confirm('¿Eliminar esta orden?')) return;
+            state.orders = state.orders.filter(x => x.id !== id);
+            saveState();
+            if (cloud.cloudEnabled) await deleteCloudRecord('orders', id)
+        }
+        function duplicateOrder(id) {
+            const o = state.orders.find(x => x.id === id);
+            if (!o) return;
+            const clone = { ...o, id: uid(), created_at: nowIso(), updated_at: nowIso(), status: 'nuevo', paid: 0 };
+            state.orders.unshift(clone);
+            saveState();
+            if (cloud.cloudEnabled) pushOrders([clone])
+        }
+        function printOrder(id) {
+            const o = state.orders.find(x => x.id === id);
+            if (!o) return;
+            const lines = (o.services?.length ? o.services : [{
+                name: o.notes || 'Trabajos solicitados',
+                price: o.total
+            }]).map(s => `<tr>
+                <td 
+                    style="padding:8px;border:1px solid #ccc">${s.name}
+                </td>
+                <td style="padding:8px;border:1px solid #ccc;text-align:right">${money(s.price)}</td></tr>`).join('');
+            const html = `<html><head><title>Orden AEME</title></head><body style="font-family:Arial,sans-serif;padding:28px">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid #111;padding-bottom:16px">
+                    <div>
+                        <div 
+                            style="font-size:34px;font-weight:900">AEME
+                        </div>
+                        <div>
+                            Montevideo, Uruguay
+                        </div></div>
+                    <div style="text-align:right"><div style="font-size:24px;font-weight:800">Orden / Presupuesto</div><div>${new Date(o.created_at).toLocaleDateString('es-UY')}</div></div></div><p><strong>Cliente:</strong> ${o.client_name} &nbsp;&nbsp; <strong>Tel:</strong> ${o.phone || '-'}</p><p><strong>Vehículo:</strong> ${o.brand} ${o.model} &nbsp;&nbsp; <strong>Matrícula:</strong> ${o.plate || '-'}</p><p><strong>Estado:</strong> ${statusLabel(o.status)} &nbsp;&nbsp; <strong>Entrega:</strong> ${o.due_date || '-'}</p><table style="width:100%;border-collapse:collapse;margin-top:12px">${lines}</table><p><strong>Notas:</strong> ${o.notes || '-'}</p><div style="text-align:right;font-size:26px;font-weight:900;margin-top:16px">Total: ${money(o.total)}</div><div style="text-align:right;font-size:18px;font-weight:700;margin-top:8px">Cobrado: ${money(o.paid)} · Saldo: ${money(Math.max(0, o.total - o.paid))}</div></body></html>`;
+            const w = window.open('', '_blank');
+            w.document.write(html);
+            w.document.close();
+            w.print()
+        }
+        function setOrdersFilter(value) {
+            ordersFilter = value;
+            document.querySelectorAll('[data-orders-filter]').forEach(x => x.classList.toggle('active', x.dataset.ordersFilter === value));
+            if (orderStatusFilter2) orderStatusFilter2.value = value;
+            renderOrders()
+        }
+        function syncSearch(from, to) {
+            document.getElementById(to).value = document.getElementById(from).value
+        }
+        function orderMatchesSearch(o, q) {
+            const hay = `${o.client_name} ${o.phone || ''} ${o.brand} ${o.model} ${o.plate || ''} ${o.notes || ''}`.toLowerCase();
+            return hay.includes(q)
+        }
+        function toggleOrderImages(id) {
+            const container = document.getElementById('order-images-' + id);
+            const button = document.getElementById('order-images-btn-' + id);
+
+            if (!container) {
+                console.error('No existe el contenedor:', 'order-images-' + id);
+                return;
+            }
+
+            const isHidden =
+                container.style.display === 'none' ||
+                container.style.display === '';
+
+            if (isHidden) {
+                container.style.display = 'grid';
+
+                if (button) {
+                    button.innerHTML =
+                        '📷 Fotos (' + container.dataset.count + ') ▲';
+                }
+            } else {
+                container.style.display = 'none';
+
+                if (button) {
+                    button.innerHTML =
+                        '📷 Fotos (' + container.dataset.count + ') ▼';
+                }
+            }
+        }
+
+        function openOrderImageLightbox(orderId, index) {
+            const order = state.orders.find(o => o.id === orderId);
+
+            if (!order || !Array.isArray(order.images)) {
+                return;
+            }
+
+            openImageLightbox(order.images, index);
+        }
+
+        function orderCard(o, listId = '') {
+
+            const orderStatus =
+                ['nuevo', 'proceso', 'listo', 'entregado'].includes(o.status)
+                    ? o.status
+                    : 'nuevo';
+
+            const images = Array.isArray(o.images) ? o.images : [];
+
+
+            console.log("ORDER CARD IMAGES:", images);
+
+            const imagesMarkup = images.length > 0
+                ? `
+                    <div class="order-images-wrapper">
+
+                        <button
+                            type="button"
+                            class="sec order-images-toggle"
+                            id="order-images-btn-${listId}-${o.id}"
+                            onclick="toggleOrderImages('${listId}-${o.id}')"
+                        >
+                            📷 Fotos (${images.length}) ▼
+                        </button>
+
+                        <div
+                            id="order-images-${listId}-${o.id}"
+                            class="order-images"
+                            data-count="${images.length}"
+                            style="display:none;"
+                        >
+                            ${images.map((image, index) => `
+                                <img
+                                    class="order-image-thumb"
+                                    src="${image.data}"
+                                    alt="${image.name || `Foto ${index + 1}`}"
+                                    onclick="openOrderImageLightbox('${o.id}', ${index})"
+                                >
+                            `).join('')}
+                        </div>
+
+                    </div>
+                `
+                : '';
+
+            return `<div class="item">
+
+                <div>
+                    <div class="title">
+                        ${o.client_name}
+                    </div>
+
+                    <div class="mini">
+                        ${o.brand} ${o.model} · ${o.plate || 'sin matrícula'}
+                    </div>
+
+                    <div class="mini">
+                        ${o.phone || ''}
+                    </div>
+
+                    <div class="mini">
+                        ${(o.services || []).map(s => s.name).slice(0, 2).join(', ') || (o.notes || 'Trabajo manual')}
+                    </div>
+
+                    ${imagesMarkup}
+                </div>
+
+                <div>
+                    <div class="money">
+                        ${money(o.total)}
+                    </div>
+
+                    <div class="mini">
+                        Cobrado: ${money(o.paid)}
+                    </div>
+
+                    <div class="mini">
+                        Saldo: ${money(Math.max(0, o.total - o.paid))}
+                    </div>
+
+                    <div class="mini">
+                        Entrega: ${o.due_date || '-'}
+                    </div>
+                </div>
+
+                <div>
+                    <span class="pill ${orderStatus}">
+                        ${statusLabel(orderStatus)}
+                    </span>
+
+                    <div class="mt8">
+                        <select class="order-status-select" onchange="updateOrderStatus('${o.id}', this.value)">
+                            <option value="nuevo" ${orderStatus === 'nuevo' ? 'selected' : ''}>
+                                Nuevo
+                            </option>
+
+                            <option value="proceso" ${orderStatus === 'proceso' ? 'selected' : ''}>
+                                En proceso
+                            </option>
+
+                            <option value="listo" ${orderStatus === 'listo' ? 'selected' : ''}>
+                                Listo
+                            </option>
+
+                            <option value="entregado" ${orderStatus === 'entregado' ? 'selected' : ''}>
+                                Entregado
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="btns">
+                    <button class="sec" onclick="editOrder('${o.id}')">
+                        Editar
+                    </button>
+
+                    <button class="sec" onclick="printOrder('${o.id}')">
+                        PDF
+                    </button>
+
+                    <button class="good" onclick="markPaid('${o.id}')">
+                        Cobrado
+                    </button>
+
+                    <button class="sec" onclick="duplicateOrder('${o.id}')">
+                        Duplicar
+                    </button>
+
+                    <button class="bad" onclick="deleteOrder('${o.id}')">
+                        Borrar
+                    </button>
+                </div>
+
+            </div>`;
+        }
+
+        function renderOrders() {
+            const q = (document.getElementById('orderSearch')?.value || document.getElementById('orderSearch2')?.value || '').toLowerCase();
+
+            if (orderSearch2) orderSearch2.value = q;
+            if (orderSearch) orderSearch.value = q;
+
+            let items = [...state.orders]
+                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+            items = items.filter(
+                o => ordersFilter === 'todos' ? true : o.status === ordersFilter
+            );
+
+            items = items.filter(o => orderMatchesSearch(o, q));
+
+            const htmlShort = items.length
+                ? items.map(o => orderCard(o, 'short')).join('')
+                : `<div class="empty">No hay órdenes con ese filtro.</div>`;
+
+            const htmlFull = items.length
+                ? items.map(o => orderCard(o, 'full')).join('')
+                : `<div class="empty">No hay órdenes con ese filtro.</div>`;
+
+            ordersList.innerHTML = htmlShort;
+            ordersListFull.innerHTML = htmlFull;
+        }
+        function addCashEntry() {
+            const amount = Number(cashAmount.value || 0); if (!amount) return alert('Poné un monto.');
+            const entry =
+            {
+                id: uid(),
+                created_at: nowIso(),
+                updated_at: nowIso(),
+                type: cashType.value,
+                method: cashMethod.value.trim(), category: cashCategory.value.trim(), amount, description: cashDescription.value.trim(), notes: ''
+            }; state.cash.unshift(entry); saveState();
+            clearCashForm();
+            if (cloud.cloudEnabled) pushCash([entry])
+        }
+        function clearCashForm() {
+            cashType.value = 'ingreso';
+            cashMethod.value = '';
+            cashCategory.value = '';
+            cashAmount.value = '';
+            cashDescription.value = ''
+        }
+        async function deleteCash(id) {
+            if (!confirm('¿Eliminar movimiento?')) return;
+            state.cash = state.cash.filter(x => x.id !== id);
+            saveState(); if (cloud.cloudEnabled) await deleteCloudRecord('cash_entries', id)
+        }
+        function renderCash() {
+            const q = (cashSearch.value || '').toLowerCase(),
+                f = cashFilter.value;
+            let items = [...state.cash].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            items = items.filter(x => (!f || x.type === f));
+            items = items.filter(x => `${x.description} ${x.category} ${x.method}`.toLowerCase().includes(q));
+            cashList.innerHTML = items.length ? items.map(x => `<div class="item">
+                <div><div class="title">
+                    ${x.description || (x.type === 'ingreso' ? 'Ingreso' : 'Egreso')}</div>
+                    <div class="mini">${x.category || '-'} · ${x.method || '-'}</div>
+                    <div class="mini">${new Date(x.created_at).toLocaleString('es-UY')}</div></div>
+                    <div><span class="pill ${x.type === 'ingreso' ? 'listo' : 'nuevo'}">${x.type === 'ingreso' ? 'Ingreso' : 'Egreso'}</span></div><div class="money">${money(x.type === 'ingreso' ? x.amount : -x.amount)}</div><div class="btns"><button class="bad" onclick="deleteCash('${x.id}')">Borrar</button></div></div>`).join('') : `<div class="empty">Todavía no hay movimientos de caja.</div>`
+        }
+        function renderClients() {
+            const q = (clientSearch.value || '').toLowerCase();
+            const map = new Map();
+            for (const o of state.orders) {
+                const key = `${(o.client_name || '').trim().toLowerCase()}|${(o.phone || '').trim()}`;
+                if (!key.trim() || key.startsWith('|')) continue;
+                if (!map.has(key)) map.set(key,
+                    {
+                        name: o.client_name,
+                        phone: o.phone,
+                        orders: 0, total: 0,
+                        last: o.created_at,
+                        vehicles: new Set()
+                    });
+                const c = map.get(key);
+                c.orders += 1;
+                c.total += Number(o.total || 0);
+                c.last = new Date(c.last) > new Date(o.created_at) ? c.last : o.created_at;
+                c.vehicles.add(`${o.brand} ${o.model}`.trim())
+            }
+            const items = [...map.values()].filter(c => `${c.name} ${c.phone} ${[...c.vehicles].join(' ')}`.toLowerCase().includes(q)).sort((a, b) => new Date(b.last) - new Date(a.last)); clientsList.innerHTML = items.length ? items.map(c => `<div class="item"><div><div class="title">${c.name}</div><div class="mini">${c.phone || '-'}</div></div><div><div class="mini">Autos</div><div>${[...c.vehicles].join(', ')}</div></div><div><div class="mini">Trabajos</div><div>${c.orders}</div></div><div><div class="money">${money(c.total)}</div><div class="mini">Facturado</div></div></div>`).join('') : `<div class="empty">No encontré clientes.</div>`
+        }
+        function renderDashboard() {
+            const open = state.orders.filter(o => o.status !== 'entregado').reduce((a, o) => a + Math.max(0, Number(o.total || 0) - Number(o.paid || 0)), 0),
+                paid = state.orders.reduce((a, o) => a + Number(o.paid || 0), 0),
+                active = state.orders.filter(o => o.status !== 'entregado').length,
+                today = todayLocalISO(),
+                cashDay = state.cash.filter(x => (x.created_at || '').slice(0, 10) === today).reduce((a, x) => a + (x.type === 'ingreso' ? Number(x.amount || 0) : -Number(x.amount || 0)), 0);
+            kpiOpen.textContent = money(open);
+            kpiPaid.textContent = money(paid);
+            kpiActive.textContent = active;
+            kpiCash.textContent = money(cashDay)
+        }
+        function renderAll() {
+            renderDashboard();
+            renderOrders();
+            renderCash();
+            renderClients();
+            paintCloudBadge()
+        }
+        function showView(name) {
+            document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+            document.getElementById(name + 'View').classList.remove('hidden');
+            document.querySelectorAll('.nav-btn').forEach(x => x.classList.toggle('active', x.dataset.view === name));
+            window.scrollTo({ top: 0, behavior: 'smooth' })
+        }
+        function openSettings() {
+            supabaseUrl.value = cloud.supabaseUrl || '';
+            supabaseKey.value = cloud.supabaseKey || '';
+            cloudEnabled.value = String(!!cloud.cloudEnabled);
+            lastSync.value = cloud.lastSync ? new Date(cloud.lastSync).toLocaleString('es-UY') : '';
+            settingsSheet.classList.add('open')
+        }
+        function closeSettings() {
+            settingsSheet.classList.remove('open')
+        }
+        async function saveCloudSettings() {
+            cloud.supabaseUrl = supabaseUrl.value.trim().replace(/\/$/, '');
+            cloud.supabaseKey = supabaseKey.value.trim();
+            cloud.cloudEnabled = cloudEnabled.value === 'true';
+            saveCloudSettingsLocal();
+            alert(cloud.cloudEnabled ? 'Configuración guardada. Ahora podés probar conexión o sincronizar.' : 'Modo local guardado.');
+            closeSettings()
+        }
+        function paintCloudBadge() {
+            const ok = cloud.cloudEnabled && cloud.supabaseUrl && cloud.supabaseKey;
+            cloudBadge.innerHTML = `<span class="sync-dot ${ok ? 'ok' : ''}"></span>${ok ? '<span class="cloud-on">Nube activa</span>' : 'Modo local'}`
+        }
+        function exportBackup() {
+            const data = {
+                exported_at: nowIso(),
+                state,
+                cloud: { ...cloud, supabaseKey: cloud.supabaseKey ? '*** oculto en exportación ***' : '' }
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)],
+                { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `aeme-pro-backup-${todayLocalISO()}.json`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove()
+        }
+        function importBackup(e) {
+            const f = e.target.files?.[0];
+            if (!f) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                try {
+                    const data = JSON.parse(reader.result);
+                    if (!data.state?.orders || !data.state?.cash) throw new Error('Formato inválido');
+                    state = data.state; saveState();
+                    alert('Backup importado.')
+                }
+                catch (err) {
+                    alert('No pude importar ese archivo.')
+                }
+            };
+            reader.readAsText(f)
+        }
+        function wipeLocal() {
+            if (!confirm('Esto borra órdenes y caja de este dispositivo.')) return;
+            state = { orders: [], cash: [] };
+            saveState()
+        }
+        function supabaseHeaders() {
+            return {
+                'Content-Type': 'application/json',
+                'apikey': cloud.supabaseKey,
+                'Authorization': 'Bearer ' + cloud.supabaseKey,
+                'Prefer': 'resolution=merge-duplicates,return=representation'
+            }
+        }
+        async function testCloud() {
+            if (!cloud.supabaseUrl || !cloud.supabaseKey) return alert('Falta URL o anon key.');
+            try {
+                const res = await fetch(`${cloud.supabaseUrl}/rest/v1/orders?select=id&limit=1`,
+                    { headers: supabaseHeaders() });
+                if (!res.ok) throw new Error(await res.text());
+                alert('Conexión OK.')
+            }
+            catch (err) {
+                console.error(err);
+                alert('No pude conectar. Revisá URL, key y schema.sql.')
+            }
+        }
+        async function pushOrders(rows) {
+            if (!cloud.cloudEnabled || !cloud.supabaseUrl || !cloud.supabaseKey) return;
+            try {
+                const res = await fetch(`${cloud.supabaseUrl}/rest/v1/orders`,
+                    {
+                        method: 'POST',
+                        headers: supabaseHeaders(),
+                        body: JSON.stringify(rows)
+                    });
+                if (!res.ok) throw new Error(await res.text());
+                cloud.lastSync = nowIso();
+                saveCloudSettingsLocal()
+            }
+            catch (err) { console.error('pushOrders', err) }
+        }
+        async function pushCash(rows) {
+            if (!cloud.cloudEnabled || !cloud.supabaseUrl || !cloud.supabaseKey) return;
+            try {
+                const res = await fetch(`${cloud.supabaseUrl}/rest/v1/cash_entries`,
+                    {
+                        method: 'POST',
+                        headers: supabaseHeaders(),
+                        body: JSON.stringify(rows)
+                    });
+                if (!res.ok) throw new Error(await res.text());
+                cloud.lastSync = nowIso();
+                saveCloudSettingsLocal()
+            }
+            catch (err) {
+                console.error('pushCash', err)
+            }
+        }
+        async function deleteCloudRecord(table, id) {
+            if (!cloud.cloudEnabled || !cloud.supabaseUrl || !cloud.supabaseKey) return;
+            try {
+                const res = await fetch(`${cloud.supabaseUrl}/rest/v1/${table}?id=eq.${encodeURIComponent(id)}`,
+                    {
+                        method: 'DELETE',
+                        headers: {
+                            'apikey': cloud.supabaseKey,
+                            'Authorization': 'Bearer ' + cloud.supabaseKey
+                        }
+                    });
+                if (!res.ok) throw new Error(await res.text());
+                cloud.lastSync = nowIso(); saveCloudSettingsLocal()
+            }
+            catch (err) {
+                console.error('deleteCloudRecord', err)
+            }
+        }
+        function mergeByNewest(localRows, remoteRows) {
+            const map = new Map();
+            for (const r of [...localRows, ...remoteRows]) {
+                const prev = map.get(r.id);
+                if (!prev) {
+                    map.set(r.id, r);
+                    continue
+                }
+                const prevTime = new Date(prev.updated_at || prev.created_at || 0).getTime(), rTime = new Date(r.updated_at || r.created_at || 0).getTime();
+                if (rTime >= prevTime) map.set(r.id, r)
+            }
+            return [...map.values()]
+        }
+        async function refreshCloud() {
+            if (!cloud.cloudEnabled) return alert('La nube no está activada.');
+            if (!cloud.supabaseUrl || !cloud.supabaseKey) return alert('Falta URL o anon key.');
+            try {
+                const [ordersRes, cashRes] = await Promise.all([fetch(`${cloud.supabaseUrl}/rest/v1/orders?select=*`,
+                    { headers: supabaseHeaders() }),
+                fetch(`${cloud.supabaseUrl}/rest/v1/cash_entries?select=*`,
+                    { headers: supabaseHeaders() })]);
+                if (!ordersRes.ok) throw new Error(await ordersRes.text());
+                if (!cashRes.ok) throw new Error(await cashRes.text());
+                const remoteOrders = await ordersRes.json(), remoteCash = await cashRes.json();
+                state.orders = mergeByNewest(state.orders, remoteOrders);
+                state.cash = mergeByNewest(state.cash, remoteCash);
+                saveState();
+                await pushOrders(state.orders);
+                await pushCash(state.cash);
+                cloud.lastSync = nowIso();
+                saveCloudSettingsLocal();
+                alert('Sincronización terminada.')
+            }
+            catch (err) {
+                console.error(err);
+                alert('No pude sincronizar. Revisá configuración y schema.')
+            }
+        }
+        let lightboxImages = [];
+        let lightboxIndex = 0;
+
+        function openImageLightbox(images, index) {
+            if (!images || !images.length) return;
+
+            lightboxImages = images;
+            lightboxIndex = index;
+
+            renderLightboxImage();
+
+            document
+                .getElementById('imageLightbox')
+                .classList.remove('hidden');
+
+            document.body.style.overflow = 'hidden';
+        }
+
+        function renderLightboxImage() {
+            const image = lightboxImages[lightboxIndex];
+
+            if (!image) return;
+
+            const img = document.getElementById('lightboxImage');
+            const counter = document.getElementById('lightboxCounter');
+
+            img.src = image.data;
+            img.alt = image.name || `Foto ${lightboxIndex + 1}`;
+
+            counter.textContent =
+                `${lightboxIndex + 1} / ${lightboxImages.length}`;
+        }
+
+        function closeImageLightbox() {
+            const lightbox = document.getElementById('imageLightbox');
+
+            lightbox.classList.add('hidden');
+
+            document.getElementById('lightboxImage').src = '';
+
+            lightboxImages = [];
+            lightboxIndex = 0;
+
+            document.body.style.overflow = '';
+        }
+
+        function previousLightboxImage() {
+            if (!lightboxImages.length) return;
+
+            lightboxIndex =
+                (lightboxIndex - 1 + lightboxImages.length)
+                % lightboxImages.length;
+
+            renderLightboxImage();
+        }
+
+        function nextLightboxImage() {
+            if (!lightboxImages.length) return;
+
+            lightboxIndex =
+                (lightboxIndex + 1)
+                % lightboxImages.length;
+
+            renderLightboxImage();
+        }
+
+        document.addEventListener('keydown', e => {
+
+            const lightbox =
+                document.getElementById('imageLightbox');
+
+            if (!lightbox || lightbox.classList.contains('hidden')) {
+                return;
+            }
+
+            if (e.key === 'Escape') {
+                closeImageLightbox();
+            }
+
+            if (e.key === 'ArrowLeft') {
+                previousLightboxImage();
+            }
+
+            if (e.key === 'ArrowRight') {
+                nextLightboxImage();
+            }
+        });
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(console.error))
+        }
+        servicesMarkup();
+        renderAll();
+        paintCloudBadge();
+        setupImageDropZone();
+    </script>
+</body>
+
+</html>
