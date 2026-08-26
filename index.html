@@ -1041,7 +1041,7 @@
     <script src="./js/images.js"></script>
     <script>
         const fmt = new Intl.NumberFormat('es-UY', { style: 'currency', currency: 'UYU', maximumFractionDigits: 0 });
-        const STORAGE_KEY = 'aeme_pro_state_v1', SETTINGS_KEY = 'aeme_pro_cloud_v1';
+        const STORAGE_KEY = 'aeme_pro_state_v1';
         let ordersFilter = 'todos', selectedServiceIds = [], editingOrderId = null;
 
         const presetServices = [
@@ -1063,19 +1063,33 @@
 
         let state = loadState();
 
-        async function loadOrdersFromSupabase() {
-            const { data, error } = await supabaseClient
-                .from('orders')
-                .select('*')
-                .order('created_at', { ascending: false });
+        async function loadDataFromSupabase() {
+            const [ordersResult, cashResult] = await Promise.all([
+                supabaseClient
+                    .from('orders')
+                    .select('*')
+                    .order('created_at', { ascending: false }),
 
-            if (error) {
-                console.error('Error cargando órdenes:', error);
+                supabaseClient
+                    .from('cash_entries')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+            ]);
+
+            if (ordersResult.error) {
+                console.error('Error cargando órdenes:', ordersResult.error);
                 alert('No se pudieron cargar las órdenes desde Supabase.');
                 return;
             }
 
-            state.orders = data || [];
+            if (cashResult.error) {
+                console.error('Error cargando caja:', cashResult.error);
+                alert('No se pudo cargar la caja desde Supabase.');
+                return;
+            }
+
+            state.orders = ordersResult.data || [];
+            state.cash = cashResult.data || [];
 
             saveState();
             renderAll();
@@ -1132,7 +1146,11 @@
 
             console.log('Usuario creado:', data.user);
 
-            alert('Usuario registrado correctamente.');
+            if (data.session) {
+                alert('Usuario registrado correctamente. Ya podés ingresar.');
+            } else {
+                alert('Usuario registrado. Revisá tu correo para confirmar la cuenta.');
+            }
         }
         function saveState() {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); renderAll()
@@ -1323,10 +1341,21 @@
 
         async function deleteOrder(id) {
             if (!confirm('¿Eliminar esta orden?')) return;
+
             state.orders = state.orders.filter(x => x.id !== id);
             saveState();
-            if (cloud.cloudEnabled) await deleteCloudRecord('orders', id)
+
+            const { error } = await supabaseClient
+                .from('orders')
+                .delete()
+                .eq('id', id);
+
+            if (error) {
+                console.error('Error eliminando orden:', error);
+                alert('No se pudo eliminar la orden de Supabase.');
+            }
         }
+
         async function duplicateOrder(id) {
             const o = state.orders.find(x => x.id === id);
             if (!o) return;
@@ -1441,9 +1470,6 @@
                     : 'nuevo';
 
             const images = Array.isArray(o.images) ? o.images : [];
-
-
-            console.log("ORDER CARD IMAGES:", images);
 
             const imagesMarkup = images.length > 0
                 ? `
@@ -1637,7 +1663,7 @@
             cashAmount.value = '';
             cashDescription.value = ''
         }
-        
+
         async function deleteCash(id) {
             if (!confirm('¿Eliminar movimiento?')) return;
 
@@ -1754,28 +1780,18 @@
             reader.readAsText(f)
         }
         function wipeLocal() {
-            if (!confirm('Esto borra órdenes y caja de este dispositivo.')) return;
-            state = { orders: [], cash: [] };
-            saveState()
+            if (!confirm(
+                'Esto eliminará los datos guardados en este dispositivo, pero NO borrará los datos de Supabase. ¿Continuar?'
+            )) return;
+
+            state = {
+                orders: [],
+                cash: []
+            };
+
+            saveState();
         }
-        async function deleteCloudRecord(table, id) {
-            if (!cloud.cloudEnabled || !cloud.supabaseUrl || !cloud.supabaseKey) return;
-            try {
-                const res = await fetch(`${cloud.supabaseUrl}/rest/v1/${table}?id=eq.${encodeURIComponent(id)}`,
-                    {
-                        method: 'DELETE',
-                        headers: {
-                            'apikey': cloud.supabaseKey,
-                            'Authorization': 'Bearer ' + cloud.supabaseKey
-                        }
-                    });
-                if (!res.ok) throw new Error(await res.text());
-                cloud.lastSync = nowIso()
-            }
-            catch (err) {
-                console.error('deleteCloudRecord', err)
-            }
-        }
+
         let lightboxImages = [];
         let lightboxIndex = 0;
 
@@ -1841,15 +1857,6 @@
 
             renderLightboxImage();
         }
-        async function probarSupabase() {
-            const { data, error } = await supabaseClient.auth.getSession();
-
-            console.log('Supabase conectado');
-            console.log('Sesión:', data.session);
-            console.log('Error:', error);
-        }
-
-        probarSupabase();
 
         async function loginUser() {
             const email = document.getElementById('authEmail').value.trim();
@@ -1873,7 +1880,7 @@
 
             console.log('Login correcto:', data.user);
 
-            await loadOrdersFromSupabase();
+            await loadDataFromSupabase();
 
             document.getElementById('authStatus').textContent =
                 'Sesión iniciada: ' + data.user.email;
