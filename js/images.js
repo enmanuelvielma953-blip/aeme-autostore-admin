@@ -3,16 +3,7 @@ let pendingImages = [];
 const IMAGE_BUCKET = 'aeme-fotos';
 const IMAGE_MAX_SIZE = 1600;
 const IMAGE_QUALITY = 0.80;
-
-
-/*
- * Convierte una imagen a WebP optimizada.
- *
- * - Máximo 1600 px de ancho/alto
- * - Calidad 84%
- * - Devuelve un Blob
- * - NO usa Base64
- */
+ 
 function optimizeImage(file) {
     return new Promise((resolve, reject) => {
 
@@ -30,8 +21,7 @@ function optimizeImage(file) {
 
             let width = img.naturalWidth;
             let height = img.naturalHeight;
-
-            // Reducir solamente si supera el tamaño máximo
+ 
             if (width > IMAGE_MAX_SIZE || height > IMAGE_MAX_SIZE) {
 
                 if (width > height) {
@@ -63,8 +53,7 @@ function optimizeImage(file) {
                 reject(new Error('No se pudo crear el canvas.'));
                 return;
             }
-
-            // Fondo blanco por seguridad
+ 
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, width, height);
 
@@ -105,11 +94,7 @@ function optimizeImage(file) {
         img.src = objectUrl;
     });
 }
-
-
-/*
- * Procesa una imagen seleccionada.
- */
+ 
 async function readImageFile(file) {
 
     const blob = await optimizeImage(file);
@@ -126,16 +111,11 @@ async function readImageFile(file) {
         blob,
 
         created_at: new Date().toISOString(),
-
-        // Indica que todavía no está subida
+ 
         uploaded: false
     };
 }
-
-
-/*
- * Procesa varias imágenes.
- */
+ 
 async function readImageFiles(files) {
 
     const imageFiles = Array.from(files)
@@ -163,11 +143,7 @@ async function readImageFiles(files) {
 
     return results;
 }
-
-
-/*
- * Configura selección y arrastrar/soltar.
- */
+ 
 function setupImageDropZone() {
 
     const dropZone =
@@ -200,8 +176,7 @@ function setupImageDropZone() {
         await handleSelectedImages(
             input.files
         );
-
-        // Permite volver a seleccionar la misma foto
+ 
         input.value = '';
     });
  
@@ -250,11 +225,7 @@ function setupImageDropZone() {
         }
     );
 }
-
-
-/*
- * Agrega imágenes a la orden pendiente.
- */
+ 
 async function handleSelectedImages(files) {
  
     try {
@@ -278,19 +249,13 @@ async function handleSelectedImages(files) {
         );
     }
 }
-
-
-/*
- * Muestra las imágenes antes de guardar.
- */
+ 
 function renderImagePreview() {
 
     const preview =
         document.getElementById('imagePreview');
 
-    if (!preview) {
-        return;
-    }
+    if (!preview) return;
 
     preview.innerHTML = '';
 
@@ -305,21 +270,38 @@ function renderImagePreview() {
                 'image-preview-item';
 
 
-            const imageUrl =
-                URL.createObjectURL(
-                    image.blob
-                );
+            let imageUrl = '';
+
+            if (image.blob) {
+
+                imageUrl =
+                    URL.createObjectURL(
+                        image.blob
+                    );
+
+            }
+
+            else if (image.path) {
+
+                imageUrl =
+                    getOrderImageUrl(
+                        image.path
+                    );
+            }
 
 
             item.innerHTML = `
                 <img
                     src="${imageUrl}"
-                    alt="${image.name}"
+                    alt="${image.name || `Foto ${index + 1}`}"
                 >
 
                 <div class="image-preview-info">
                     <small>
-                        ${formatImageSize(image.size)}
+                        ${image.size
+                            ? formatImageSize(image.size)
+                            : 'Guardada'
+                        }
                     </small>
                 </div>
 
@@ -327,7 +309,7 @@ function renderImagePreview() {
                     type="button"
                     class="image-remove-btn"
                     title="Eliminar imagen"
-                    aria-label="Eliminar ${image.name}"
+                    aria-label="Eliminar imagen"
                     data-image-id="${image.id}"
                 >
                     ×
@@ -338,14 +320,20 @@ function renderImagePreview() {
             const img =
                 item.querySelector('img');
 
-            img.addEventListener(
-                'load',
-                () => {
-                    URL.revokeObjectURL(
-                        imageUrl
-                    );
-                }
-            );
+
+            if (image.blob) {
+
+                img.addEventListener(
+                    'load',
+                    () => {
+
+                        URL.revokeObjectURL(
+                            imageUrl
+                        );
+
+                    }
+                );
+            }
 
 
             preview.appendChild(item);
@@ -368,22 +356,20 @@ function renderImagePreview() {
                     const imageId =
                         button.dataset.imageId;
 
+
                     pendingImages =
                         pendingImages.filter(
                             image =>
                                 image.id !== imageId
                         );
 
+
                     renderImagePreview();
                 }
             );
         });
 }
-
-
-/*
- * Muestra KB / MB.
- */
+ 
 function formatImageSize(bytes) {
 
     if (!bytes) {
@@ -403,11 +389,7 @@ function formatImageSize(bytes) {
         + ' MB'
     );
 }
-
-
-/*
- * Sube una imagen optimizada a Supabase Storage.
- */
+ 
 async function uploadOrderImage(
     orderId,
     image
@@ -459,11 +441,7 @@ async function uploadOrderImage(
         created_at: image.created_at
     };
 }
-
-
-/*
- * Sube todas las imágenes de una orden.
- */
+ 
 async function uploadOrderImages(
     orderId,
     images
@@ -477,8 +455,6 @@ async function uploadOrderImages(
 
     for (const image of images) {
 
-        // Las imágenes existentes
-        // ya tienen path y no tienen blob.
         if (!image.blob && image.path) {
 
             uploaded.push(image);
@@ -498,11 +474,7 @@ async function uploadOrderImages(
 
     return uploaded;
 }
-
-
-/*
- * Obtiene la URL pública de una imagen.
- */
+ 
 function getOrderImageUrl(path) {
 
     if (!path) {
@@ -517,12 +489,7 @@ function getOrderImageUrl(path) {
 
     return data.publicUrl;
 }
-
-
-/*
- * Borra las imágenes de una orden
- * desde Storage.
- */
+ 
 async function deleteOrderImages(images) {
 
     if (!images?.length) {
