@@ -1042,8 +1042,11 @@
     <script>
         const fmt = new Intl.NumberFormat('es-UY', { style: 'currency', currency: 'UYU', maximumFractionDigits: 0 });
         const STORAGE_KEY = 'aeme_pro_state_v1';
-        const IMAGE_BUCKET = 'aeme-fotos';
-        let ordersFilter = 'todos', selectedServiceIds = [], editingOrderId = null;
+
+        let ordersFilter = 'todos';
+        let selectedServiceIds = [];
+        let editingOrderId = null;
+
 
         const presetServices = [
             { id: 'lavado-comun', name: 'Lavado completo común', price: 750 },
@@ -1099,8 +1102,7 @@
         }
 
         function loadState() {
-            const raw = localStorage.getItem(STORAGE_KEY);
-
+            const raw = localStorage.getItem(STORAGE_KEY); 
             if (!raw) {
                 return {
                     orders: [],
@@ -1742,11 +1744,11 @@
             window.scrollTo({ top: 0, behavior: 'smooth' })
         }
         function openSettings() {
-            settingsSheet.classList.add('open');
+            document.getElementById('settingsSheet').classList.add('open');
         }
 
         function closeSettings() {
-            settingsSheet.classList.remove('open')
+            document.getElementById('settingsSheet').classList.remove('open');
         }
         function exportBackup() {
             const data = {
