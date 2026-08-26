@@ -475,20 +475,32 @@ async function uploadOrderImages(
     return uploaded;
 }
  
-function getOrderImageUrl(path) {
+async function getOrderImageUrl(path) {
 
     if (!path) {
         return '';
     }
 
-    const { data } =
-        supabaseClient
+    const { data, error } =
+        await supabaseClient
             .storage
             .from(IMAGE_BUCKET)
-            .getPublicUrl(path);
+            .createSignedUrl(path, 3600);
 
-    return data.publicUrl;
+    if (error) {
+
+        console.error(
+            'Error creando URL de imagen:',
+            error
+        );
+
+        return '';
+    }
+
+    return data.signedUrl;
 }
+
+
  
 async function deleteOrderImages(images) {
 

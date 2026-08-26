@@ -1649,14 +1649,16 @@
                             data-count="${images.length}"
                             style="display:none;"
                         >
+
                             ${images.map((image, index) => `
                                 <img
                                     class="order-image-thumb"
-                                    src="${getOrderImageUrl(image.path)}"
+                                    data-image-path="${image.path}"
                                     alt="${image.name || `Foto ${index + 1}`}"
                                     onclick="openOrderImageLightbox('${o.id}', ${index})"
                                 >
                             `).join('')}
+
                         </div>
 
                     </div>
@@ -1754,6 +1756,39 @@
             </div>`;
         }
 
+        async function loadOrderImageUrls() {
+
+            const images =
+                document.querySelectorAll(
+                    '.order-image-thumb[data-image-path]'
+                );
+
+            for (const img of images) {
+
+                const path =
+                    img.dataset.imagePath;
+
+                if (!path) continue;
+
+                try {
+
+                    const url =
+                        await getOrderImageUrl(path);
+
+                    if (url) {
+                        img.src = url;
+                    }
+
+                } catch (error) {
+
+                    console.error(
+                        'Error cargando imagen:',
+                        error
+                    );
+                }
+            }
+        }
+
         function renderOrders() {
             const q = (document.getElementById('orderSearch')?.value || document.getElementById('orderSearch2')?.value || '').toLowerCase();
 
@@ -1779,6 +1814,8 @@
 
             ordersList.innerHTML = htmlShort;
             ordersListFull.innerHTML = htmlFull;
+
+            loadOrderImageUrls();
         }
         async function addCashEntry() {
             const amount = Number(cashAmount.value || 0);
@@ -1969,7 +2006,7 @@
             document.body.style.overflow = 'hidden';
         }
 
-        function renderLightboxImage() {
+        async function renderLightboxImage() {
 
             const image = lightboxImages[lightboxIndex];
 
@@ -1979,11 +2016,17 @@
 
             const counter = document.getElementById('lightboxCounter');
 
-            img.src = getOrderImageUrl(image.path);
+            counter.textContent = `${lightboxIndex + 1} / ${lightboxImages.length}`;
+
+            img.src = '';
+
+            const url = await getOrderImageUrl(image.path);
+
+            if (url) {
+                img.src = url;
+            }
 
             img.alt = image.name || `Foto ${lightboxIndex + 1}`;
-
-            counter.textContent = `${lightboxIndex + 1} / ${lightboxImages.length}`;
         }
 
         function closeImageLightbox() {
