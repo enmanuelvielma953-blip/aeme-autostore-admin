@@ -1254,10 +1254,23 @@
                 const i = state.orders.findIndex(o => o.id === order.id);
                 if (i >= 0) state.orders[i] = order;
                 else state.orders.unshift(order);
+
                 saveState();
-                if (cloud.cloudEnabled) await pushOrders([order]);
+
+                const { error } = await supabaseClient
+                    .from('orders')
+                    .upsert(order);
+
+                if (error) {
+                    console.error('Error guardando orden en Supabase:', error);
+                    alert('La orden se guardó localmente, pero no se pudo guardar en Supabase.');
+                    return;
+                }
+
+                console.log('Orden guardada en Supabase:', order);
+
                 clearOrderForm();
-                showView('orders')
+                showView('orders');
             });
         function editOrder(id) {
             const o = state.orders.find(x => x.id === id);
@@ -1909,7 +1922,7 @@
             }
 
             console.log('Login correcto:', data.user);
-            
+
             await loadOrdersFromSupabase();
 
             document.getElementById('authStatus').textContent =
