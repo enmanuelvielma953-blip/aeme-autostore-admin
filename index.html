@@ -1091,6 +1091,27 @@
         ];
 
         let state = loadState(), cloud = loadCloudSettings();
+
+        async function loadOrdersFromSupabase() {
+            const { data, error } = await supabaseClient
+                .from('orders')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('Error cargando órdenes:', error);
+                alert('No se pudieron cargar las órdenes desde Supabase.');
+                return;
+            }
+
+            state.orders = data || [];
+
+            saveState();
+            renderAll();
+
+            console.log('Órdenes cargadas desde Supabase:', state.orders);
+        }
+
         function loadState() {
             const raw = localStorage.getItem(STORAGE_KEY);
 
@@ -1866,7 +1887,7 @@
         }
 
         probarSupabase();
-        
+
         async function loginUser() {
             const email = document.getElementById('authEmail').value.trim();
             const password = document.getElementById('authPassword').value;
@@ -1888,6 +1909,8 @@
             }
 
             console.log('Login correcto:', data.user);
+            
+            await loadOrdersFromSupabase();
 
             document.getElementById('authStatus').textContent =
                 'Sesión iniciada: ' + data.user.email;
