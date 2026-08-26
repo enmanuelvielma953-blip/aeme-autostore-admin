@@ -1067,6 +1067,55 @@
 
         let state = loadState();
 
+        async function initAuth() {
+
+            const {
+                data: { session },
+                error
+            } = await supabaseClient.auth.getSession();
+
+            if (error) {
+                console.error('Error obteniendo sesión:', error);
+                updateCloudBadge(null);
+                return;
+            }
+
+            if (session?.user) {
+                console.log('Sesión restaurada:', session.user.email);
+
+                updateCloudBadge(session.user);
+
+                await loadDataFromSupabase();
+
+            } else {
+                console.log('No hay sesión activa');
+
+                updateCloudBadge(null);
+            }
+
+            supabaseClient.auth.onAuthStateChange(
+                async (event, session) => {
+
+                    console.log('Auth:', event);
+
+                    if (session?.user) {
+
+                        updateCloudBadge(session.user);
+
+                        if (
+                            event === 'SIGNED_IN' ||
+                            event === 'INITIAL_SESSION'
+                        ) {
+                            await loadDataFromSupabase();
+                        }
+
+                    } else {
+                        updateCloudBadge(null);
+                    }
+                }
+            );
+        }
+
         async function loadDataFromSupabase() {
             const [ordersResult, cashResult] = await Promise.all([
                 supabaseClient
@@ -2089,6 +2138,8 @@
             document.getElementById('authStatus').textContent =
                 'Sesión iniciada: ' + data.user.email;
 
+            updateCloudBadge(data.user);
+
             alert('Sesión iniciada correctamente.');
         }
 
@@ -2103,36 +2154,138 @@
             return data.user;
         }
 
-        async function testUploadImage(file) {
-            const user = await getCurrentUser();
+        function updateCloudBadge(user = null) {
 
-            if (!user) {
-                alert('Tenés que iniciar sesión.');
+            const badge =
+                document.getElementById('cloudBadge');
+
+            if (!badge) return;
+
+            if (user) {
+
+                badge.innerHTML = `
+                    <span
+                        class="sync-dot"
+                        style="background:#22c55e; box-shadow:0 0 8px rgba(34,197,94,.6);"
+                    ></span>
+                    Conectado
+                `;
+
+                badge.title =
+                    `Sesión activa: ${user.email || ''}`;
+
                 return;
             }
 
-            const fileName =
-                `${user.id}/test-${crypto.randomUUID()}.${file.name.split('.').pop()}`;
+            badge.innerHTML = `
+                <span
+                    class="sync-dot"
+                    style="background:#f59e0b;"
+                ></span>
+                Modo local
+            `;
 
-            console.log('Subiendo:', fileName);
+            badge.title =
+                'No hay una sesión activa';
+        }
 
-            const { data, error } = await supabaseClient
-                .storage
-                .from('aeme-fotos')
-                .upload(fileName, file, {
-                    cacheControl: '3600',
-                    upsert: false
-                });
+        async function restoreSession() {
+
+            const {
+                data,
+                error
+            } = await supabaseClient.auth.getSession();
 
             if (error) {
-                console.error('Error subiendo imagen:', error);
-                alert('No se pudo subir la imagen: ' + error.message);
+
+                console.error(
+                    'Error recuperando sesión:',
+                    error
+                );
+
+                updateCloudBadge(null);
+
                 return;
             }
 
-            console.log('Imagen subida correctamente:', data);
+            const session = data.session;
 
-            alert('Imagen subida correctamente a Supabase Storage.');
+            if (session?.user) {
+
+                console.log(
+                    'Sesión restaurada:',
+                    session.user.email
+                );
+
+                updateCloudBadge(session.user);
+
+                document.getElementById('authStatus').textContent =
+                    'Sesión iniciada: ' +
+                    session.user.email;
+
+                await loadDataFromSupabase();
+
+            } else {
+
+                console.log(
+                    'No hay sesión activa.'
+                );
+
+                updateCloudBadge(null);
+            }
+        }
+        supabaseClient.auth.onAuthStateChange(
+            async (event, session) => {
+
+                console.log(
+                    'Cambio de autenticación:',
+                    event
+                );
+
+                if (session?.user) {
+
+                    updateCloudBadge(session.user);
+
+                    document.getElementById('authStatus').textContent =
+                        'Sesión iniciada: ' +
+                        session.user.email;
+
+                } else {
+
+                    updateCloudBadge(null);
+
+                    document.getElementById('authStatus').textContent =
+                        'Sin sesión';
+                }
+            }
+        );
+
+        async function logoutUser() {
+
+            const { error } =
+                await supabaseClient.auth.signOut();
+
+            if (error) {
+
+                console.error(
+                    'Error cerrando sesión:',
+                    error
+                );
+
+                alert(
+                    'No se pudo cerrar la sesión: ' +
+                    error.message
+                );
+
+                return;
+            }
+
+            updateCloudBadge(null);
+
+            document.getElementById('authStatus').textContent =
+                'Sin sesión';
+
+            alert('Sesión cerrada.');
         }
 
         document.addEventListener('keydown', e => {
@@ -2159,6 +2312,10 @@
         servicesMarkup();
         renderAll();
         setupImageDropZone();
+        initAuth();
+
+        updateCloudBadge(null);
+        restoreSession();
     </script>
 </body>
 
