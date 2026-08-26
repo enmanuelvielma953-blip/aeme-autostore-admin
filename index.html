@@ -900,10 +900,6 @@
                             <button class="sec" onclick="openSettings()">
                                 Configuración
                             </button>
-
-                            <button class="sec" onclick="refreshCloud()">
-                                Sincronizar
-                            </button>
                         </div>
                         <div id="ordersList" class="list"></div>
                     </div>
@@ -974,9 +970,10 @@
     </div>
     <div id="settingsSheet" class="sheet">
         <div class="wrap">
+            <div class="sheet-head">
+                <h3>Cuenta</h3><button class="sec" onclick="closeSettings()">Cerrar</button>
+            </div>
             <div class="settings-section">
-                <h3>Cuenta</h3>
-
                 <div id="authStatus">
                     No estás registrado.
                 </div>
@@ -999,38 +996,12 @@
                     </button>
                 </div>
             </div>
-            <div class="sheet-head">
-                <h3>Configuración</h3><button class="sec" onclick="closeSettings()">Cerrar</button>
-            </div>
             <div class="panel">
                 <h2>Respaldo</h2>
                 <div class="btns"><button class="sec" onclick="exportBackup()">Exportar backup</button><button
                         class="sec" onclick="document.getElementById('importBackup').click()">Importar
                         backup</button><input hidden type="file" id="importBackup" accept="application/json"
                         onchange="importBackup(event)" /></div>
-            </div>
-            <div class="panel mt8">
-                <h2>Sincronización en nube</h2>
-                <div class="field"><label>URL de Supabase</label><input id="supabaseUrl"
-                        placeholder="https://TU-PROYECTO.supabase.co" /></div>
-                <div class="field"><label>Anon key</label><textarea id="supabaseKey"
-                        placeholder="Pegá acá la anon key de Supabase"></textarea></div>
-                <div class="row">
-                    <div class="field"><label>Activar nube</label><select id="cloudEnabled">
-                            <option value="false">No</option>
-                            <option value="true">Sí</option>
-                        </select></div>
-                    <div class="field"><label>Último sync</label><input id="lastSync" disabled /></div>
-                </div>
-                <div class="btns"><button onclick="saveCloudSettings()">Guardar configuración</button><button
-                        class="good" onclick="testCloud()">Probar conexión</button><button class="sec"
-                        onclick="refreshCloud()">Traer datos de
-                        nube</button></div>
-                <div class="small-note">Esta versión ya está pronta para sincronizar entre PC y iPhone, pero necesitás
-                    crear tu
-                    proyecto de Supabase y pegar <strong>URL + anon key</strong>. En la carpeta te dejé un archivo
-                    <strong>schema.sql</strong> para crear las tablas.
-                </div>
             </div>
             <div class="panel mt8">
                 <h2>Mantenimiento</h2>
@@ -1090,7 +1061,7 @@
             { id: 'pdr', name: 'Saca bollo sin pintar', price: 4500 }
         ];
 
-        let state = loadState(), cloud = loadCloudSettings();
+        let state = loadState();
 
         async function loadOrdersFromSupabase() {
             const { data, error } = await supabaseClient
@@ -1165,12 +1136,6 @@
         }
         function saveState() {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); renderAll()
-        }
-        function loadCloudSettings() {
-            const raw = localStorage.getItem(SETTINGS_KEY); return raw ? JSON.parse(raw) : { supabaseUrl: '', supabaseKey: '', cloudEnabled: false, lastSync: '' }
-        }
-        function saveCloudSettingsLocal() {
-            localStorage.setItem(SETTINGS_KEY, JSON.stringify(cloud)); paintCloudBadge()
         }
         function uid() {
             return window.crypto?.randomUUID ? crypto.randomUUID() : 'id-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9)
@@ -1307,32 +1272,88 @@
         async function markPaid(id) {
             const o = state.orders.find(x => x.id === id);
             if (!o) return;
+
             o.paid = o.total;
-            if (o.status === 'nuevo') o.status = 'proceso';
+
+            if (o.status === 'nuevo') {
+                o.status = 'proceso';
+            }
+
             o.updated_at = nowIso();
+
             saveState();
-            if (cloud.cloudEnabled) await pushOrders([o])
+
+            const { error } = await supabaseClient
+                .from('orders')
+                .update({
+                    paid: o.paid,
+                    status: o.status,
+                    updated_at: o.updated_at
+                })
+                .eq('id', o.id);
+
+            if (error) {
+                console.error('Error actualizando pago:', error);
+                alert('No se pudo actualizar el pago en Supabase.');
+            }
         }
+
         async function updateOrderStatus(id, newStatus) {
             const o = state.orders.find(x => x.id === id);
-            if (!o) return; o.status = newStatus;
+            if (!o) return;
+
+            o.status = newStatus;
             o.updated_at = nowIso();
-            saveState(); if (cloud.cloudEnabled) await pushOrders([o])
+
+            saveState();
+
+            const { error } = await supabaseClient
+                .from('orders')
+                .update({
+                    status: o.status,
+                    updated_at: o.updated_at
+                })
+                .eq('id', o.id);
+
+            if (error) {
+                console.error('Error actualizando estado:', error);
+                alert('No se pudo actualizar el estado en Supabase.');
+            }
         }
+
         async function deleteOrder(id) {
             if (!confirm('¿Eliminar esta orden?')) return;
             state.orders = state.orders.filter(x => x.id !== id);
             saveState();
             if (cloud.cloudEnabled) await deleteCloudRecord('orders', id)
         }
-        function duplicateOrder(id) {
+        async function duplicateOrder(id) {
             const o = state.orders.find(x => x.id === id);
             if (!o) return;
-            const clone = { ...o, id: uid(), created_at: nowIso(), updated_at: nowIso(), status: 'nuevo', paid: 0 };
+
+            const clone = {
+                ...o,
+                id: uid(),
+                created_at: nowIso(),
+                updated_at: nowIso(),
+                status: 'nuevo',
+                paid: 0
+            };
+
             state.orders.unshift(clone);
             saveState();
-            if (cloud.cloudEnabled) pushOrders([clone])
+
+            const { error } = await supabaseClient
+                .from('orders')
+                .insert(clone);
+
+            if (error) {
+                console.error('Error duplicando orden:', error);
+                alert('No se pudo guardar la copia en Supabase.');
+                return;
+            }
         }
+
         function printOrder(id) {
             const o = state.orders.find(x => x.id === id);
             if (!o) return;
@@ -1574,19 +1595,41 @@
             ordersList.innerHTML = htmlShort;
             ordersListFull.innerHTML = htmlFull;
         }
-        function addCashEntry() {
-            const amount = Number(cashAmount.value || 0); if (!amount) return alert('Poné un monto.');
-            const entry =
-            {
+        async function addCashEntry() {
+            const amount = Number(cashAmount.value || 0);
+
+            if (!amount) {
+                alert('Poné un monto.');
+                return;
+            }
+
+            const entry = {
                 id: uid(),
                 created_at: nowIso(),
                 updated_at: nowIso(),
                 type: cashType.value,
-                method: cashMethod.value.trim(), category: cashCategory.value.trim(), amount, description: cashDescription.value.trim(), notes: ''
-            }; state.cash.unshift(entry); saveState();
+                method: cashMethod.value.trim(),
+                category: cashCategory.value.trim(),
+                amount,
+                description: cashDescription.value.trim(),
+                notes: ''
+            };
+
+            state.cash.unshift(entry);
+            saveState();
+
             clearCashForm();
-            if (cloud.cloudEnabled) pushCash([entry])
+
+            const { error } = await supabaseClient
+                .from('cash_entries')
+                .insert(entry);
+
+            if (error) {
+                console.error('Error guardando movimiento:', error);
+                alert('El movimiento quedó localmente, pero no se pudo guardar en Supabase.');
+            }
         }
+
         function clearCashForm() {
             cashType.value = 'ingreso';
             cashMethod.value = '';
@@ -1594,11 +1637,25 @@
             cashAmount.value = '';
             cashDescription.value = ''
         }
+        
         async function deleteCash(id) {
             if (!confirm('¿Eliminar movimiento?')) return;
+
             state.cash = state.cash.filter(x => x.id !== id);
-            saveState(); if (cloud.cloudEnabled) await deleteCloudRecord('cash_entries', id)
+            saveState();
+
+            const { error } = await supabaseClient
+                .from('cash_entries')
+                .delete()
+                .eq('id', id);
+
+            if (error) {
+                console.error('Error eliminando movimiento:', error);
+                alert('No se pudo eliminar el movimiento de Supabase.');
+            }
         }
+
+
         function renderCash() {
             const q = (cashSearch.value || '').toLowerCase(),
                 f = cashFilter.value;
@@ -1649,8 +1706,7 @@
             renderDashboard();
             renderOrders();
             renderCash();
-            renderClients();
-            paintCloudBadge()
+            renderClients()
         }
         function showView(name) {
             document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
@@ -1659,26 +1715,11 @@
             window.scrollTo({ top: 0, behavior: 'smooth' })
         }
         function openSettings() {
-            supabaseUrl.value = cloud.supabaseUrl || '';
-            supabaseKey.value = cloud.supabaseKey || '';
-            cloudEnabled.value = String(!!cloud.cloudEnabled);
-            lastSync.value = cloud.lastSync ? new Date(cloud.lastSync).toLocaleString('es-UY') : '';
-            settingsSheet.classList.add('open')
+            settingsSheet.classList.add('open');
         }
+
         function closeSettings() {
             settingsSheet.classList.remove('open')
-        }
-        async function saveCloudSettings() {
-            cloud.supabaseUrl = supabaseUrl.value.trim().replace(/\/$/, '');
-            cloud.supabaseKey = supabaseKey.value.trim();
-            cloud.cloudEnabled = cloudEnabled.value === 'true';
-            saveCloudSettingsLocal();
-            alert(cloud.cloudEnabled ? 'Configuración guardada. Ahora podés probar conexión o sincronizar.' : 'Modo local guardado.');
-            closeSettings()
-        }
-        function paintCloudBadge() {
-            const ok = cloud.cloudEnabled && cloud.supabaseUrl && cloud.supabaseKey;
-            cloudBadge.innerHTML = `<span class="sync-dot ${ok ? 'ok' : ''}"></span>${ok ? '<span class="cloud-on">Nube activa</span>' : 'Modo local'}`
         }
         function exportBackup() {
             const data = {
@@ -1717,59 +1758,6 @@
             state = { orders: [], cash: [] };
             saveState()
         }
-        function supabaseHeaders() {
-            return {
-                'Content-Type': 'application/json',
-                'apikey': cloud.supabaseKey,
-                'Authorization': 'Bearer ' + cloud.supabaseKey,
-                'Prefer': 'resolution=merge-duplicates,return=representation'
-            }
-        }
-        async function testCloud() {
-            if (!cloud.supabaseUrl || !cloud.supabaseKey) return alert('Falta URL o anon key.');
-            try {
-                const res = await fetch(`${cloud.supabaseUrl}/rest/v1/orders?select=id&limit=1`,
-                    { headers: supabaseHeaders() });
-                if (!res.ok) throw new Error(await res.text());
-                alert('Conexión OK.')
-            }
-            catch (err) {
-                console.error(err);
-                alert('No pude conectar. Revisá URL, key y schema.sql.')
-            }
-        }
-        async function pushOrders(rows) {
-            if (!cloud.cloudEnabled || !cloud.supabaseUrl || !cloud.supabaseKey) return;
-            try {
-                const res = await fetch(`${cloud.supabaseUrl}/rest/v1/orders`,
-                    {
-                        method: 'POST',
-                        headers: supabaseHeaders(),
-                        body: JSON.stringify(rows)
-                    });
-                if (!res.ok) throw new Error(await res.text());
-                cloud.lastSync = nowIso();
-                saveCloudSettingsLocal()
-            }
-            catch (err) { console.error('pushOrders', err) }
-        }
-        async function pushCash(rows) {
-            if (!cloud.cloudEnabled || !cloud.supabaseUrl || !cloud.supabaseKey) return;
-            try {
-                const res = await fetch(`${cloud.supabaseUrl}/rest/v1/cash_entries`,
-                    {
-                        method: 'POST',
-                        headers: supabaseHeaders(),
-                        body: JSON.stringify(rows)
-                    });
-                if (!res.ok) throw new Error(await res.text());
-                cloud.lastSync = nowIso();
-                saveCloudSettingsLocal()
-            }
-            catch (err) {
-                console.error('pushCash', err)
-            }
-        }
         async function deleteCloudRecord(table, id) {
             if (!cloud.cloudEnabled || !cloud.supabaseUrl || !cloud.supabaseKey) return;
             try {
@@ -1782,48 +1770,10 @@
                         }
                     });
                 if (!res.ok) throw new Error(await res.text());
-                cloud.lastSync = nowIso(); saveCloudSettingsLocal()
+                cloud.lastSync = nowIso()
             }
             catch (err) {
                 console.error('deleteCloudRecord', err)
-            }
-        }
-        function mergeByNewest(localRows, remoteRows) {
-            const map = new Map();
-            for (const r of [...localRows, ...remoteRows]) {
-                const prev = map.get(r.id);
-                if (!prev) {
-                    map.set(r.id, r);
-                    continue
-                }
-                const prevTime = new Date(prev.updated_at || prev.created_at || 0).getTime(), rTime = new Date(r.updated_at || r.created_at || 0).getTime();
-                if (rTime >= prevTime) map.set(r.id, r)
-            }
-            return [...map.values()]
-        }
-        async function refreshCloud() {
-            if (!cloud.cloudEnabled) return alert('La nube no está activada.');
-            if (!cloud.supabaseUrl || !cloud.supabaseKey) return alert('Falta URL o anon key.');
-            try {
-                const [ordersRes, cashRes] = await Promise.all([fetch(`${cloud.supabaseUrl}/rest/v1/orders?select=*`,
-                    { headers: supabaseHeaders() }),
-                fetch(`${cloud.supabaseUrl}/rest/v1/cash_entries?select=*`,
-                    { headers: supabaseHeaders() })]);
-                if (!ordersRes.ok) throw new Error(await ordersRes.text());
-                if (!cashRes.ok) throw new Error(await cashRes.text());
-                const remoteOrders = await ordersRes.json(), remoteCash = await cashRes.json();
-                state.orders = mergeByNewest(state.orders, remoteOrders);
-                state.cash = mergeByNewest(state.cash, remoteCash);
-                saveState();
-                await pushOrders(state.orders);
-                await pushCash(state.cash);
-                cloud.lastSync = nowIso();
-                saveCloudSettingsLocal();
-                alert('Sincronización terminada.')
-            }
-            catch (err) {
-                console.error(err);
-                alert('No pude sincronizar. Revisá configuración y schema.')
             }
         }
         let lightboxImages = [];
@@ -1957,7 +1907,6 @@
         }
         servicesMarkup();
         renderAll();
-        paintCloudBadge();
         setupImageDropZone();
     </script>
 </body>
