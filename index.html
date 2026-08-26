@@ -1857,6 +1857,15 @@
 
             renderLightboxImage();
         }
+        async function probarSupabase() {
+            const { data, error } = await supabaseClient.auth.getSession();
+
+            console.log('Supabase conectado');
+            console.log('Sesión:', data.session);
+            console.log('Error:', error);
+        }
+
+        probarSupabase();
 
         document.addEventListener('keydown', e => {
 
