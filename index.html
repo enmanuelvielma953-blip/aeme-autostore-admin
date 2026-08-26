@@ -1866,6 +1866,34 @@
         }
 
         probarSupabase();
+        
+        async function loginUser() {
+            const email = document.getElementById('authEmail').value.trim();
+            const password = document.getElementById('authPassword').value;
+
+            if (!email || !password) {
+                alert('Ingresá email y contraseña.');
+                return;
+            }
+
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+                email,
+                password
+            });
+
+            if (error) {
+                console.error('Error de login:', error);
+                alert('No se pudo iniciar sesión: ' + error.message);
+                return;
+            }
+
+            console.log('Login correcto:', data.user);
+
+            document.getElementById('authStatus').textContent =
+                'Sesión iniciada: ' + data.user.email;
+
+            alert('Sesión iniciada correctamente.');
+        }
 
         document.addEventListener('keydown', e => {
 
