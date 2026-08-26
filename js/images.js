@@ -1,166 +1,556 @@
 let pendingImages = [];
 
-function readImageFile(file) {
+const IMAGE_BUCKET = 'aeme-fotos';
+const IMAGE_MAX_SIZE = 1600;
+const IMAGE_QUALITY = 0.80;
+
+
+/*
+ * Convierte una imagen a WebP optimizada.
+ *
+ * - Máximo 1600 px de ancho/alto
+ * - Calidad 84%
+ * - Devuelve un Blob
+ * - NO usa Base64
+ */
+function optimizeImage(file) {
     return new Promise((resolve, reject) => {
-        if (!file.type.startsWith("image/")) {
+
+        if (!file.type.startsWith('image/')) {
             reject(new Error(`"${file.name}" no es una imagen.`));
             return;
         }
 
-        const reader = new FileReader();
+        const img = new Image();
+        const objectUrl = URL.createObjectURL(file);
 
-        reader.onload = () => {
-            resolve({
-                id: crypto.randomUUID(),
-                name: file.name,
-                type: file.type,
-                size: file.size,
-                data: reader.result,
-                created_at: new Date().toISOString()
+        img.onload = () => {
+
+            URL.revokeObjectURL(objectUrl);
+
+            let width = img.naturalWidth;
+            let height = img.naturalHeight;
+
+            // Reducir solamente si supera el tamaño máximo
+            if (width > IMAGE_MAX_SIZE || height > IMAGE_MAX_SIZE) {
+
+                if (width > height) {
+                    height = Math.round(
+                        height * IMAGE_MAX_SIZE / width
+                    );
+
+                    width = IMAGE_MAX_SIZE;
+
+                } else {
+                    width = Math.round(
+                        width * IMAGE_MAX_SIZE / height
+                    );
+
+                    height = IMAGE_MAX_SIZE;
+                }
+            }
+
+            const canvas = document.createElement('canvas');
+
+            canvas.width = width;
+            canvas.height = height;
+
+            const ctx = canvas.getContext('2d', {
+                alpha: false
             });
+
+            if (!ctx) {
+                reject(new Error('No se pudo crear el canvas.'));
+                return;
+            }
+
+            // Fondo blanco por seguridad
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, width, height);
+
+            ctx.drawImage(
+                img,
+                0,
+                0,
+                width,
+                height
+            );
+
+            canvas.toBlob(
+                blob => {
+
+                    if (!blob) {
+                        reject(
+                            new Error('No se pudo comprimir la imagen.')
+                        );
+                        return;
+                    }
+
+                    resolve(blob);
+
+                },
+                'image/webp',
+                IMAGE_QUALITY
+            );
         };
 
-        reader.onerror = () => {
-            reject(new Error(`No se pudo leer "${file.name}".`));
+        img.onerror = () => {
+            URL.revokeObjectURL(objectUrl);
+
+            reject(
+                new Error(`No se pudo procesar "${file.name}".`)
+            );
         };
 
-        reader.readAsDataURL(file);
+        img.src = objectUrl;
     });
 }
 
 
-async function readImageFiles(files) {
-    const imageFiles = Array.from(files)
-        .filter(file => file.type.startsWith("image/"));
+/*
+ * Procesa una imagen seleccionada.
+ */
+async function readImageFile(file) {
 
-    return Promise.all(
-        imageFiles.map(readImageFile)
+    const blob = await optimizeImage(file);
+
+    return {
+        id: crypto.randomUUID(),
+
+        name: file.name,
+
+        type: 'image/webp',
+
+        size: blob.size,
+
+        blob,
+
+        created_at: new Date().toISOString(),
+
+        // Indica que todavía no está subida
+        uploaded: false
+    };
+}
+
+
+/*
+ * Procesa varias imágenes.
+ */
+async function readImageFiles(files) {
+
+    const imageFiles = Array.from(files)
+        .filter(file => file.type.startsWith('image/'));
+
+    const results = [];
+
+    for (const file of imageFiles) {
+
+        try {
+
+            const image = await readImageFile(file);
+
+            results.push(image);
+
+        } catch (error) {
+
+            console.error(
+                `Error procesando ${file.name}:`,
+                error
+            );
+
+        }
+    }
+
+    return results;
+}
+
+
+/*
+ * Configura selección y arrastrar/soltar.
+ */
+function setupImageDropZone() {
+
+    const dropZone =
+        document.getElementById('imageDropZone');
+
+    const input =
+        document.getElementById('imageInput');
+
+    if (!dropZone || !input) {
+
+        console.warn(
+            'No se encontró la zona de imágenes.'
+        );
+
+        return;
+    }
+
+
+    dropZone.addEventListener('click', () => {
+        input.click();
+    });
+
+
+    input.addEventListener('change', async () => {
+
+        if (!input.files?.length) {
+            return;
+        }
+
+        await handleSelectedImages(
+            input.files
+        );
+
+        // Permite volver a seleccionar la misma foto
+        input.value = '';
+    });
+ 
+
+    dropZone.addEventListener(
+        'dragover',
+        event => {
+
+            event.preventDefault();
+
+            dropZone.classList.add('dragover');
+        }
+    );
+
+
+    dropZone.addEventListener(
+        'dragleave',
+        () => {
+
+            dropZone.classList.remove(
+                'dragover'
+            );
+        }
+    );
+
+
+    dropZone.addEventListener(
+        'drop',
+        async event => {
+
+            event.preventDefault();
+
+            dropZone.classList.remove(
+                'dragover'
+            );
+
+            if (
+                !event.dataTransfer.files?.length
+            ) {
+                return;
+            }
+
+            await handleSelectedImages(
+                event.dataTransfer.files
+            );
+        }
     );
 }
 
 
-function setupImageDropZone() {
-    const dropZone = document.getElementById("imageDropZone");
-    const input = document.getElementById("imageInput");
-
-    if (!dropZone || !input) {
-        console.warn("No se encontró la zona de imágenes.");
-        return;
-    }
-
-    dropZone.addEventListener("click", () => {
-        input.click();
-    });
-
-    input.addEventListener("change", async () => {
-        console.log("CHANGE DISPARADO");
-        console.log("FILES:", input.files);
-        console.log("CANTIDAD:", input.files.length);
-
-        if (!input.files?.length) return;
-
-        await handleSelectedImages(input.files);
-
-        console.log("PENDING DESPUÉS:", pendingImages);
-    });
-
-
-
-    dropZone.addEventListener("dragover", event => {
-        event.preventDefault();
-        dropZone.classList.add("dragover");
-    });
-
-    dropZone.addEventListener("dragleave", () => {
-        dropZone.classList.remove("dragover");
-    });
-
-    dropZone.addEventListener("drop", async event => {
-        event.preventDefault();
-
-        dropZone.classList.remove("dragover");
-
-        if (!event.dataTransfer.files?.length) return;
-
-        await handleSelectedImages(event.dataTransfer.files);
-    });
-}
-
-
+/*
+ * Agrega imágenes a la orden pendiente.
+ */
 async function handleSelectedImages(files) {
-    console.log("========== IMÁGENES ==========");
-    console.log("FILES:", files);
-    console.log("FILES LENGTH:", files.length);
-    console.log("PRIMER FILE:", files[0]);
-
+ 
     try {
-        const images = await readImageFiles(files);
+ 
+        const images =
+            await readImageFiles(files);
 
-        console.log("IMAGES RESULTADO:", images);
-        console.log("IMAGE 0:", images[0]);
-
-        pendingImages.push(...images);
-
-        console.log("PENDING FINAL:", pendingImages);
+        pendingImages.push(...images); 
 
         renderImagePreview();
 
-        console.log(
-            "IMG CREADA:",
-            document.querySelector("#imagePreview img")
+    } catch (error) {
+
+        console.error(
+            'Error procesando imágenes:',
+            error
         );
 
-    } catch (error) {
-        console.error("ERROR:", error);
+        alert(
+            'No se pudieron procesar algunas imágenes.'
+        );
     }
 }
 
+
+/*
+ * Muestra las imágenes antes de guardar.
+ */
 function renderImagePreview() {
-    const preview = document.getElementById("imagePreview");
 
-    if (!preview) return;
+    const preview =
+        document.getElementById('imagePreview');
 
-    preview.innerHTML = "";
+    if (!preview) {
+        return;
+    }
 
-    pendingImages.forEach((image, index) => {
-        const item = document.createElement("div");
+    preview.innerHTML = '';
 
-        item.className = "image-preview-item";
 
-        item.innerHTML = `
-            <img
-                src="${image.data}"
-                alt="${image.name}"
-            >
+    pendingImages.forEach(
+        (image, index) => {
 
-            <button
-                type="button"
-                class="image-remove-btn"
-                title="Eliminar imagen"
-                aria-label="Eliminar ${image.name}"
-                data-image-id="${image.id}"
-            >
-                ×
-            </button>
-        `;
+            const item =
+                document.createElement('div');
 
-        preview.appendChild(item);
-    });
+            item.className =
+                'image-preview-item';
 
-    preview.querySelectorAll(".image-remove-btn").forEach(button => {
-        button.addEventListener("click", event => {
-            event.stopPropagation();
 
-            const imageId = button.dataset.imageId;
+            const imageUrl =
+                URL.createObjectURL(
+                    image.blob
+                );
 
-            pendingImages = pendingImages.filter(
-                image => image.id !== imageId
+
+            item.innerHTML = `
+                <img
+                    src="${imageUrl}"
+                    alt="${image.name}"
+                >
+
+                <div class="image-preview-info">
+                    <small>
+                        ${formatImageSize(image.size)}
+                    </small>
+                </div>
+
+                <button
+                    type="button"
+                    class="image-remove-btn"
+                    title="Eliminar imagen"
+                    aria-label="Eliminar ${image.name}"
+                    data-image-id="${image.id}"
+                >
+                    ×
+                </button>
+            `;
+
+
+            const img =
+                item.querySelector('img');
+
+            img.addEventListener(
+                'load',
+                () => {
+                    URL.revokeObjectURL(
+                        imageUrl
+                    );
+                }
             );
 
-            renderImagePreview();
 
-            console.log("Imágenes pendientes:", pendingImages);
+            preview.appendChild(item);
+        }
+    );
+
+
+    preview
+        .querySelectorAll(
+            '.image-remove-btn'
+        )
+        .forEach(button => {
+
+            button.addEventListener(
+                'click',
+                event => {
+
+                    event.stopPropagation();
+
+                    const imageId =
+                        button.dataset.imageId;
+
+                    pendingImages =
+                        pendingImages.filter(
+                            image =>
+                                image.id !== imageId
+                        );
+
+                    renderImagePreview();
+                }
+            );
         });
-    });
 }
 
+
+/*
+ * Muestra KB / MB.
+ */
+function formatImageSize(bytes) {
+
+    if (!bytes) {
+        return '0 KB';
+    }
+
+    if (bytes < 1024 * 1024) {
+
+        return (
+            (bytes / 1024).toFixed(0)
+            + ' KB'
+        );
+    }
+
+    return (
+        (bytes / (1024 * 1024)).toFixed(2)
+        + ' MB'
+    );
+}
+
+
+/*
+ * Sube una imagen optimizada a Supabase Storage.
+ */
+async function uploadOrderImage(
+    orderId,
+    image
+) {
+
+    const extension = 'webp';
+
+    const path =
+        `ordenes/${orderId}/${image.id}.${extension}`;
+
+
+    const { data, error } =
+        await supabaseClient
+            .storage
+            .from(IMAGE_BUCKET)
+            .upload(
+                path,
+                image.blob,
+                {
+                    contentType: 'image/webp',
+                    cacheControl: '31536000',
+                    upsert: false
+                }
+            );
+
+
+    if (error) {
+
+        console.error(
+            'Error subiendo imagen:',
+            error
+        );
+
+        throw error;
+    }
+
+
+    return {
+        id: image.id,
+
+        name: image.name,
+
+        path: data.path,
+
+        type: 'image/webp',
+
+        size: image.size,
+
+        created_at: image.created_at
+    };
+}
+
+
+/*
+ * Sube todas las imágenes de una orden.
+ */
+async function uploadOrderImages(
+    orderId,
+    images
+) {
+
+    if (!images?.length) {
+        return [];
+    }
+
+    const uploaded = [];
+
+    for (const image of images) {
+
+        // Las imágenes existentes
+        // ya tienen path y no tienen blob.
+        if (!image.blob && image.path) {
+
+            uploaded.push(image);
+
+            continue;
+        }
+
+
+        const result =
+            await uploadOrderImage(
+                orderId,
+                image
+            );
+
+        uploaded.push(result);
+    }
+
+    return uploaded;
+}
+
+
+/*
+ * Obtiene la URL pública de una imagen.
+ */
+function getOrderImageUrl(path) {
+
+    if (!path) {
+        return '';
+    }
+
+    const { data } =
+        supabaseClient
+            .storage
+            .from(IMAGE_BUCKET)
+            .getPublicUrl(path);
+
+    return data.publicUrl;
+}
+
+
+/*
+ * Borra las imágenes de una orden
+ * desde Storage.
+ */
+async function deleteOrderImages(images) {
+
+    if (!images?.length) {
+        return;
+    }
+
+    const paths =
+        images
+            .map(image => image.path)
+            .filter(Boolean);
+
+    if (!paths.length) {
+        return;
+    }
+
+    const { error } =
+        await supabaseClient
+            .storage
+            .from(IMAGE_BUCKET)
+            .remove(paths);
+
+    if (error) {
+
+        console.error(
+            'Error eliminando imágenes:',
+            error
+        );
+
+        throw error;
+    }
+}

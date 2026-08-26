@@ -1042,6 +1042,7 @@
     <script>
         const fmt = new Intl.NumberFormat('es-UY', { style: 'currency', currency: 'UYU', maximumFractionDigits: 0 });
         const STORAGE_KEY = 'aeme_pro_state_v1';
+        const IMAGE_BUCKET = 'aeme-fotos';
         let ordersFilter = 'todos', selectedServiceIds = [], editingOrderId = null;
 
         const presetServices = [
@@ -1886,6 +1887,49 @@
                 'Sesión iniciada: ' + data.user.email;
 
             alert('Sesión iniciada correctamente.');
+        }
+
+        async function getCurrentUser() {
+            const { data, error } = await supabaseClient.auth.getUser();
+
+            if (error) {
+                console.error('Error obteniendo usuario:', error);
+                return null;
+            }
+
+            return data.user;
+        }
+
+        async function testUploadImage(file) {
+            const user = await getCurrentUser();
+
+            if (!user) {
+                alert('Tenés que iniciar sesión.');
+                return;
+            }
+
+            const fileName =
+                `${user.id}/test-${crypto.randomUUID()}.${file.name.split('.').pop()}`;
+
+            console.log('Subiendo:', fileName);
+
+            const { data, error } = await supabaseClient
+                .storage
+                .from('aeme-fotos')
+                .upload(fileName, file, {
+                    cacheControl: '3600',
+                    upsert: false
+                });
+
+            if (error) {
+                console.error('Error subiendo imagen:', error);
+                alert('No se pudo subir la imagen: ' + error.message);
+                return;
+            }
+
+            console.log('Imagen subida correctamente:', data);
+
+            alert('Imagen subida correctamente a Supabase Storage.');
         }
 
         document.addEventListener('keydown', e => {
