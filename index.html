@@ -1092,6 +1092,31 @@
                 width: 100%;
             }
         }
+
+        .work-notes-preview {
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+
+        .work-notes-title {
+            font-weight: 700;
+            margin-bottom: 3px;
+        }
+
+        .work-note {
+            color: #cbd5e1;
+        }
+
+        .work-more-btn {
+            border: 0;
+            background: none;
+            color: #60a5fa;
+            padding: 4px 0;
+            margin-top: 3px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+        }   
     </style>
 </head>
 
@@ -1162,8 +1187,18 @@
                             <div class="field"><label>Cobrado / Seña</label><input id="paidAmount" type="number" min="0"
                                     value="0" /></div>
                         </div>
-                        <div class="field"><label>Notas</label><textarea id="notes"
-                                placeholder="Ej: micro pintura, llantas, lavado motor, etc."></textarea>
+                        <div class="field">
+                            <label>Trabajos</label>
+
+                            <div class="work-editor">
+                                <textarea id="notes"
+                                    placeholder="Ej: micro pintura, llantas, lavado motor, etc."></textarea>
+                            </div>
+
+                            <div class="small-note">
+                                Podés escribir cada trabajo en una línea y dejar espacios para separar grupos.
+                            </div>
+
                             <div class="field">
                                 <label>Imágenes</label>
 
@@ -1655,11 +1690,27 @@
             servicesList.innerHTML = presetServices.map(s => `<div class="service ${selectedServiceIds.includes(s.id) ? 'active' : ''}" onclick="toggleService('${s.id}')"><div><strong>${s.name}</strong><br><small>${money(s.price)}</small></div><div>${selectedServiceIds.includes(s.id) ? '✓' : '+'}</div></div>`).join('')
         }
         function toggleService(id) {
-            selectedServiceIds = selectedServiceIds.includes(id) ? selectedServiceIds.filter(x => x !== id) : [...selectedServiceIds, id];
-            const selected = presetServices.filter(s => selectedServiceIds.includes(s.id));
-            totalAmount.value = selected.reduce((a, s) => a + s.price, 0) || '';
-            notes.value = selected.map(s => s.name).join(', '); servicesMarkup()
+
+            selectedServiceIds = selectedServiceIds.includes(id)
+                ? selectedServiceIds.filter(x => x !== id)
+                : [...selectedServiceIds, id];
+
+            const selected = presetServices.filter(
+                s => selectedServiceIds.includes(s.id)
+            );
+
+            totalAmount.value =
+                selected.reduce((a, s) => a + s.price, 0) || '';
+
+            const serviceNames = selected.map(s => s.name);
+
+            notes.value = serviceNames.join('\n');
+
+            servicesMarkup();
         }
+
+
+
         function clearOrderForm() {
             editingOrderId = null;
             selectedServiceIds = [];
@@ -2479,7 +2530,16 @@
                     </div>
 
                     <div class="mini">
-                        ${(o.services || []).map(s => s.name).slice(0, 2).join(', ') || (o.notes || 'Trabajo manual')}
+                        ${o.notes ? `
+                            <div
+                                class="work-notes-preview"
+                                data-notes="${encodeURIComponent(o.notes)}"
+                                data-expanded="false"
+                            >
+                                <div class="work-notes-title">Trabajos</div>
+                                ${formatWorkNotes(o.notes)}
+                            </div>
+                        ` : ''}
                     </div>
 
                     ${imagesMarkup}
@@ -3231,6 +3291,49 @@
 
         function isCloudMode() {
             return !!supabaseClient?.auth?.getSession;
+        }
+        
+        function toggleWorkNotes(button) {
+            const container = button.closest('.work-notes-preview');
+
+            if (!container) return;
+
+            const notes = decodeURIComponent(container.dataset.notes || '');
+            const expanded = container.dataset.expanded === 'true';
+
+            container.dataset.expanded = expanded ? 'false' : 'true';
+
+            container.innerHTML = `
+                <div class="work-notes-title">Trabajos</div>
+                ${formatWorkNotes(notes, !expanded)}
+            `;
+        }
+
+        function formatWorkNotes(text, expanded = false) {
+            if (!text) return '';
+
+            const lines = text
+                .split('\n')
+                .map(line => line.trim())
+                .filter(Boolean);
+
+            const visibleLines = expanded ? lines : lines.slice(0, 4);
+
+            return `
+                ${visibleLines
+                    .map(line => `<div class="work-note">• ${line}</div>`)
+                    .join('')}
+
+                ${lines.length > 4 ? `
+                    <button
+                        type="button"
+                        class="work-more-btn"
+                        onclick="toggleWorkNotes(this)"
+                    >
+                        ${expanded ? 'Ver menos' : `Ver más (${lines.length - 4})`}
+                    </button>
+                ` : ''}
+            `;
         }
 
         document.addEventListener('keydown', e => {
