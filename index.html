@@ -790,6 +790,308 @@
             padding: 5px 10px;
             border-radius: 999px;
         }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+
+            background: rgba(3, 7, 12, .78);
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 18px;
+
+            z-index: 9999;
+
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-overlay.hidden {
+            display: none !important;
+        }
+
+        .modal-card {
+            width: min(540px, 100%);
+            max-height: 92vh;
+            overflow-y: auto;
+
+            background:
+                linear-gradient(180deg,
+                    rgba(255, 255, 255, .045),
+                    rgba(255, 255, 255, .018)),
+                var(--panel);
+
+            color: var(--text);
+
+            border: 1px solid rgba(255, 255, 255, .09);
+
+            border-radius: var(--r);
+
+            box-shadow:
+                0 30px 80px rgba(0, 0, 0, .55),
+                0 0 0 1px rgba(231, 196, 106, .03);
+
+            padding: 20px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+
+            gap: 16px;
+
+            margin-bottom: 18px;
+
+            padding-bottom: 16px;
+
+            border-bottom: 1px solid var(--line);
+        }
+
+        .modal-header h2 {
+            margin: 0 0 5px;
+
+            font-size: 20px;
+            font-weight: 1000;
+
+            letter-spacing: -.4px;
+        }
+
+        .modal-header .mini {
+            color: var(--muted);
+        }
+
+        .modal-header button {
+            width: 40px;
+            height: 40px;
+
+            padding: 0;
+
+            display: grid;
+            place-items: center;
+
+            border-radius: 12px;
+
+            flex-shrink: 0;
+        }
+
+        .payment-summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+
+            gap: 9px;
+
+            margin-bottom: 18px;
+        }
+
+        .payment-summary>div {
+            padding: 13px;
+
+            border-radius: 15px;
+
+            background:
+                linear-gradient(180deg,
+                    rgba(255, 255, 255, .035),
+                    rgba(255, 255, 255, .015)),
+                #0e1621;
+
+            border: 1px solid var(--line);
+        }
+
+        .payment-summary span {
+            display: block;
+
+            margin-bottom: 6px;
+
+            color: var(--muted);
+
+            font-size: 10px;
+
+            text-transform: uppercase;
+
+            letter-spacing: .7px;
+        }
+
+        .payment-summary strong {
+            display: block;
+
+            font-size: 18px;
+
+            font-weight: 1000;
+
+            color: var(--text);
+        }
+
+        .payment-summary>div:first-child strong {
+            color: #ffebaf;
+        }
+
+        .payment-summary>div:nth-child(2) strong {
+            color: var(--green);
+        }
+
+        .payment-summary>div:nth-child(3) {
+            border-color: rgba(231, 196, 106, .28);
+
+            background:
+                linear-gradient(180deg,
+                    rgba(231, 196, 106, .08),
+                    rgba(231, 196, 106, .025)),
+                #0e1621;
+        }
+
+        .payment-summary>div:nth-child(3) strong {
+            color: var(--gold);
+        }
+
+        .modal-card .field {
+            margin-bottom: 13px;
+        }
+
+        .modal-card label {
+            color: var(--muted);
+        }
+
+        .modal-card input,
+        .modal-card select,
+        .modal-card textarea {
+            background: #0d141e;
+
+            color: var(--text);
+
+            border: 1px solid var(--line);
+
+            border-radius: 14px;
+
+            padding: 12px 13px;
+        }
+
+        .modal-card input::placeholder {
+            color: #657386;
+        }
+
+        .modal-card input:focus,
+        .modal-card select:focus,
+        .modal-card textarea:focus {
+            border-color: rgba(231, 196, 106, .78);
+
+            box-shadow:
+                0 0 0 4px rgba(231, 196, 106, .08);
+        }
+
+        #paymentAmount {
+            font-size: 16px;
+            font-weight: 800;
+
+            color: #ffebaf;
+        }
+
+        #paymentAmountError {
+            margin-top: 7px;
+
+            padding: 8px 10px;
+
+            border-radius: 10px;
+
+            background: rgba(255, 112, 112, .08);
+
+            border: 1px solid rgba(255, 112, 112, .20);
+
+            color: var(--red) !important;
+        }
+
+        .payment-footer {
+            display: flex;
+
+            justify-content: flex-end;
+
+            gap: 9px;
+
+            margin-top: 20px;
+
+            padding-top: 16px;
+
+            border-top: 1px solid var(--line);
+        }
+
+        .payment-footer button {
+            min-height: 44px;
+        }
+
+        .modal-card::-webkit-scrollbar {
+            width: 7px;
+        }
+
+        .modal-card::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .modal-card::-webkit-scrollbar-thumb {
+            background: #253244;
+            border-radius: 999px;
+        }
+
+        .modal-card::-webkit-scrollbar-thumb:hover {
+            background: #34445a;
+        }
+
+        @media (max-width: 600px) {
+
+            .modal-overlay {
+                align-items: flex-end;
+
+                padding: 0;
+            }
+
+            .modal-card {
+                width: 100%;
+
+                max-height: 92vh;
+
+                border-radius: 22px 22px 0 0;
+
+                padding:
+                    18px 14px calc(18px + env(safe-area-inset-bottom));
+            }
+
+            .modal-header {
+                margin-bottom: 15px;
+            }
+
+            .modal-header h2 {
+                font-size: 18px;
+            }
+
+            .payment-summary {
+                grid-template-columns: 1fr 1fr 1fr;
+
+                gap: 7px;
+            }
+
+            .payment-summary>div {
+                padding: 11px 9px;
+            }
+
+            .payment-summary span {
+                font-size: 9px;
+            }
+
+            .payment-summary strong {
+                font-size: 15px;
+            }
+
+            .payment-footer {
+                flex-direction: column-reverse;
+
+                gap: 8px;
+            }
+
+            .payment-footer button {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 
@@ -855,10 +1157,10 @@
                             <div id="servicesList" class="services"></div>
                         </div>
                         <div class="row">
-                            <div class="field"><label>Total</label><input id="totalAmount" type="number"
-                                    min="0" required /></div>
-                            <div class="field"><label>Cobrado / Seña</label><input id="paidAmount" type="number"
-                                    min="0" value="0" /></div>
+                            <div class="field"><label>Total</label><input id="totalAmount" type="number" min="0"
+                                    required /></div>
+                            <div class="field"><label>Cobrado / Seña</label><input id="paidAmount" type="number" min="0"
+                                    value="0" /></div>
                         </div>
                         <div class="field"><label>Notas</label><textarea id="notes"
                                 placeholder="Ej: micro pintura, llantas, lavado motor, etc."></textarea>
@@ -1036,6 +1338,127 @@
         </button>
 
     </div>
+    <div id="paymentModal" class="modal-overlay hidden">
+
+        <div class="modal-card">
+
+            <div class="modal-header">
+                <div>
+                    <h2>Registrar cobro</h2>
+                    <div id="paymentVehicle" class="mini"></div>
+                </div>
+
+                <button type="button" class="sec" onclick="closePaymentModal()">
+                    ✕
+                </button>
+            </div>
+
+            <div class="payment-summary">
+
+                <div>
+                    <span>Total</span>
+                    <strong id="paymentTotal">$ 0</strong>
+                </div>
+
+                <div>
+                    <span>Ya cobrado</span>
+                    <strong id="paymentAlreadyPaid">$ 0</strong>
+                </div>
+
+                <div>
+                    <span>Saldo</span>
+                    <strong id="paymentRemaining">$ 0</strong>
+                </div>
+
+            </div>
+
+            <div class="field">
+
+                <label for="paymentAmount">
+                    Monto a cobrar
+                </label>
+
+                <input id="paymentAmount" type="number" min="0" step="1" />
+
+                <div id="paymentAmountError" class="small-note" style="color:#ef4444;display:none;"></div>
+
+            </div>
+
+            <div class="field">
+
+                <label for="paymentMethod">
+                    Método de pago
+                </label>
+
+                <select id="paymentMethod">
+
+                    <option value="">
+                        Seleccionar método
+                    </option>
+
+                    <option value="Efectivo">
+                        Efectivo
+                    </option>
+
+                    <option value="Transferencia">
+                        Transferencia
+                    </option>
+
+                    <option value="Débito">
+                        Débito
+                    </option>
+
+                    <option value="Crédito">
+                        Crédito
+                    </option>
+
+                    <option value="Mercado Pago">
+                        Mercado Pago
+                    </option>
+
+                    <option value="Otro">
+                        Otro
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div class="field">
+
+                <label for="paymentCategory">
+                    Categoría
+                </label>
+
+                <input id="paymentCategory" value="Cobro de servicio" placeholder="Ej: Cobro de servicio" />
+
+            </div>
+
+            <div class="field">
+
+                <label for="paymentDescription">
+                    Descripción
+                </label>
+
+                <input id="paymentDescription" placeholder="Detalle del cobro" />
+
+            </div>
+
+            <div class="payment-footer">
+
+                <button type="button" class="sec" onclick="closePaymentModal()">
+                    Cancelar
+                </button>
+
+                <button type="button" class="good" onclick="confirmPayment()">
+                    Confirmar cobro
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="./js/supabase.js"></script>
     <script src="./js/images.js"></script>
@@ -1046,6 +1469,7 @@
         let ordersFilter = 'todos';
         let selectedServiceIds = [];
         let editingOrderId = null;
+        let currentUser = null;
 
 
         const presetServices = [
@@ -1252,6 +1676,7 @@
             e.preventDefault();
 
             try {
+
                 const existingOrder = editingOrderId
                     ? state.orders.find(o => o.id === editingOrderId)
                     : null;
@@ -1264,6 +1689,7 @@
                     id: orderId,
 
                     created_at: existingOrder?.created_at || nowIso(),
+
                     updated_at: nowIso(),
 
                     client_name: clientName.value.trim(),
@@ -1282,102 +1708,132 @@
 
                     notes: notes.value.trim(),
 
-                    services: presetServices.filter(
-                        s => selectedServiceIds.includes(s.id)
-                    ),
+                    services:
+                        presetServices.filter(
+                            s => selectedServiceIds.includes(s.id)
+                        ),
 
                     images: [],
 
                     archived: false
                 };
 
-                const { error: orderError } = await supabaseClient
-                    .from('orders')
-                    .upsert(order);
+                if (currentUser) {
 
-                if (orderError) {
-                    console.error(
-                        'Error guardando orden:',
-                        orderError
+                    const { error: orderError } =
+                        await supabaseClient
+                            .from('orders')
+                            .upsert(order);
+
+                    if (orderError) {
+
+                        console.error(
+                            'Error guardando orden:',
+                            orderError
+                        );
+
+                        alert(
+                            'No se pudo guardar la orden en Supabase.'
+                        );
+
+                        return;
+                    }
+
+                    const finalImages =
+                        await uploadOrderImages(
+                            orderId,
+                            pendingImages
+                        );
+
+                    const newPaths = new Set(
+                        finalImages
+                            .map(image => image.path)
+                            .filter(Boolean)
                     );
 
-                    alert(
-                        'No se pudo guardar la orden en Supabase.'
-                    );
 
-                    return;
+                    const deletedImages =
+                        oldImages.filter(
+                            image =>
+                                image.path &&
+                                !newPaths.has(image.path)
+                        );
+
+                    if (deletedImages.length) {
+
+                        try {
+
+                            await deleteOrderImages(
+                                deletedImages
+                            );
+
+                        } catch (error) {
+
+                            console.error(
+                                'Error eliminando imágenes antiguas:',
+                                error
+                            );
+                        }
+                    }
+
+                    const {
+                        error: imageUpdateError
+                    } =
+                        await supabaseClient
+                            .from('orders')
+                            .update({
+                                images: finalImages,
+                                updated_at: nowIso()
+                            })
+                            .eq('id', orderId);
+
+
+                    if (imageUpdateError) {
+
+                        console.error(
+                            'Error guardando imágenes:',
+                            imageUpdateError
+                        );
+
+                        alert(
+                            'La orden se guardó, pero hubo un problema guardando las imágenes.'
+                        );
+
+                        return;
+                    }
+
+                    order.images = finalImages;
+
+                } else {
+
+                    const finalImages =
+                        pendingImages.map(image => ({
+                            ...image,
+                            uploaded: false
+                        }));
+
+
+                    order.images = finalImages;
                 }
 
-                const newImages = await uploadOrderImages(
-                    orderId,
-                    pendingImages
-                );
-
-                const finalImages = newImages;
-
-                const newPaths = new Set(
-                    finalImages
-                        .map(image => image.path)
-                        .filter(Boolean)
-                );
-
-                const deletedImages = oldImages.filter(
-                    image =>
-                        image.path &&
-                        !newPaths.has(image.path)
-                );
-
-                if (deletedImages.length) {
-
-                    await deleteOrderImages(
-                        deletedImages
-                    );
-                }
-
-                const { error: imageUpdateError } =
-                    await supabaseClient
-                        .from('orders')
-                        .update({
-                            images: finalImages,
-                            updated_at: nowIso()
-                        })
-                        .eq('id', orderId);
-
-
-                if (imageUpdateError) {
-
-                    console.error(
-                        'Error guardando imágenes:',
-                        imageUpdateError
-                    );
-
-                    alert(
-                        'La orden se guardó, pero hubo un problema guardando las imágenes.'
-                    );
-
-                    return;
-                }
-
-                order.images = finalImages;
-
-                const index = state.orders.findIndex(
-                    o => o.id === orderId
-                );
+                const index = state.orders.findIndex(o => o.id === orderId);
 
                 if (index >= 0) {
                     state.orders[index] = order;
-                } else {
+                }
+                else {
                     state.orders.unshift(order);
                 }
 
                 saveState();
 
-
                 clearOrderForm();
 
                 showView('orders');
 
-            } catch (error) {
+
+            }
+            catch (error) {
 
                 console.error(
                     'Error guardando orden:',
@@ -1442,33 +1898,326 @@
             });
         }
 
-        async function markPaid(id) {
+        let paymentOrderId = null;
+
+        function markPaid(id) {
+
             const o = state.orders.find(x => x.id === id);
+
             if (!o) return;
 
-            o.paid = o.total;
+            const total = Number(o.total || 0);
+            const paid = Number(o.paid || 0);
+            const remaining = Math.max(0, total - paid);
 
-            if (o.status === 'nuevo') {
-                o.status = 'proceso';
+            if (remaining <= 0) {
+
+                alert('Esta orden ya está completamente cobrada.');
+
+                return;
             }
 
-            o.updated_at = nowIso();
+            paymentOrderId = id;
+
+            document.getElementById('paymentTotal').textContent =
+                money(total);
+
+            document.getElementById('paymentAlreadyPaid').textContent =
+                money(paid);
+
+            document.getElementById('paymentRemaining').textContent =
+                money(remaining);
+
+            const vehicle =
+                `${o.brand || ''} ${o.model || ''}`.trim();
+
+            document.getElementById('paymentVehicle').textContent =
+                `${vehicle || 'Vehículo'} · ${o.plate || 'Sin matrícula'}`;
+
+            const amountInput =
+                document.getElementById('paymentAmount');
+
+            amountInput.value = remaining;
+            amountInput.max = remaining;
+
+            document.getElementById('paymentMethod').value = '';
+
+            document.getElementById('paymentCategory').value =
+                'Cobro de servicio';
+
+            document.getElementById('paymentDescription').value =
+                `Cobro ${vehicle || 'vehículo'}` +
+                (o.plate ? ` - ${o.plate}` : '');
+
+            clearPaymentAmountError();
+
+            document
+                .getElementById('paymentModal')
+                .classList.remove('hidden');
+
+            setTimeout(() => {
+                amountInput.focus();
+                amountInput.select();
+            }, 50);
+        }
+
+        function closePaymentModal() {
+
+            paymentOrderId = null;
+
+            document
+                .getElementById('paymentModal')
+                .classList.add('hidden');
+        }
+
+        function clearPaymentAmountError() {
+
+            const error =
+                document.getElementById('paymentAmountError');
+
+            error.textContent = '';
+            error.style.display = 'none';
+        }
+
+        function showPaymentAmountError(message) {
+
+            const error =
+                document.getElementById('paymentAmountError');
+
+            error.textContent = message;
+            error.style.display = 'block';
+        }
+
+        async function confirmPayment() {
+
+            if (!paymentOrderId) {
+                return;
+            }
+
+            const o =
+                state.orders.find(x => x.id === paymentOrderId);
+
+            if (!o) {
+
+                alert('No se encontró la orden.');
+
+                closePaymentModal();
+
+                return;
+            }
+
+            const total = Number(o.total || 0);
+            const paid = Number(o.paid || 0);
+
+            const remaining =
+                Math.max(0, total - paid);
+
+            const amount =
+                Number(
+                    document
+                        .getElementById('paymentAmount')
+                        .value || 0
+                );
+
+            const method =
+                document
+                    .getElementById('paymentMethod')
+                    .value
+                    .trim();
+
+            const category =
+                document
+                    .getElementById('paymentCategory')
+                    .value
+                    .trim();
+
+            const description =
+                document
+                    .getElementById('paymentDescription')
+                    .value
+                    .trim();
+
+            if (!Number.isFinite(amount) || amount <= 0) {
+
+                showPaymentAmountError(
+                    'Ingresá un monto mayor que 0.'
+                );
+
+                return;
+            }
+
+            if (amount > remaining) {
+
+                showPaymentAmountError(
+                    `No podés cobrar más de ${money(remaining)}.`
+                );
+
+                return;
+            }
+
+            if (!method) {
+
+                alert('Seleccioná el método de pago.');
+
+                return;
+            }
+
+            if (!category) {
+
+                alert('Ingresá una categoría.');
+
+                return;
+            }
+
+            if (!description) {
+
+                alert('Ingresá una descripción.');
+
+                return;
+            }
+
+            const freshPaid =
+                Number(o.paid || 0);
+
+            const freshRemaining =
+                Math.max(
+                    0,
+                    Number(o.total || 0) - freshPaid
+                );
+
+            if (amount > freshRemaining) {
+
+                alert(
+                    `El saldo cambió.\n\n` +
+                    `Saldo actual: ${money(freshRemaining)}`
+                );
+
+                closePaymentModal();
+                renderAll();
+
+                return;
+            }
+
+            const newPaid =
+                freshPaid + amount;
+
+            const now =
+                nowIso();
+
+            const cashEntry = {
+
+                id: uid(),
+                created_at: now,
+                updated_at: now,
+                type: 'ingreso',
+                method,
+                category,
+                amount,
+                description,
+                notes: '',
+                order_id: o.id
+            };
+
+
+            const fullyPaid =
+                newPaid >= Number(o.total || 0);
+
+            const newStatus =
+                fullyPaid && o.status === 'nuevo'
+                    ? 'proceso'
+                    : o.status;
+
+            if (currentUser) {
+                const {
+                    error: cashError
+                } =
+                    await supabaseClient
+                        .from('cash_entries')
+                        .insert(cashEntry);
+
+
+                if (cashError) {
+
+                    console.error(
+                        'Error registrando cobro:',
+                        cashError
+                    );
+
+                    alert(
+                        'No se pudo registrar el cobro en caja.\n\n' +
+                        'La orden no fue modificada.'
+                    );
+
+                    return;
+                }
+
+                const {
+                    error: orderError
+                } =
+                    await supabaseClient
+                        .from('orders')
+                        .update({
+                            paid: newPaid,
+                            status: newStatus,
+                            updated_at: now
+                        })
+                        .eq('id', o.id);
+
+
+                if (orderError) {
+
+                    console.error(
+                        'Error actualizando orden:',
+                        orderError
+                    );
+
+                    const {
+                        error: rollbackError
+                    } =
+                        await supabaseClient
+                            .from('cash_entries')
+                            .delete()
+                            .eq('id', cashEntry.id);
+
+                    if (rollbackError) {
+
+                        console.error(
+                            'Error revirtiendo cobro:',
+                            rollbackError
+                        );
+                    }
+
+                    alert(
+                        'No se pudo actualizar la orden.\n\n' +
+                        'El movimiento de caja fue revertido.'
+                    );
+                    return;
+                }
+            }
+
+            o.paid = newPaid;
+            o.status = newStatus;
+            o.updated_at = now;
+
+            state.cash.unshift(cashEntry);
 
             saveState();
 
-            const { error } = await supabaseClient
-                .from('orders')
-                .update({
-                    paid: o.paid,
-                    status: o.status,
-                    updated_at: o.updated_at
-                })
-                .eq('id', o.id);
+            closePaymentModal();
 
-            if (error) {
-                console.error('Error actualizando pago:', error);
-                alert('No se pudo actualizar el pago en Supabase.');
-            }
+            const finalRemaining =
+                Math.max(
+                    0,
+                    Number(o.total || 0) -
+                    Number(o.paid || 0)
+                );
+
+            alert(
+                `Cobro registrado correctamente.\n\n` +
+                `Cobrado ahora: ${money(amount)}\n` +
+                `Total cobrado: ${money(o.paid)}\n` +
+                `Saldo restante: ${money(finalRemaining)}`
+            );
         }
 
         async function updateOrderStatus(id, newStatus) {
@@ -1940,27 +2689,183 @@
                     <div class="mini">${new Date(x.created_at).toLocaleString('es-UY')}</div></div>
                     <div><span class="pill ${x.type === 'ingreso' ? 'listo' : 'nuevo'}">${x.type === 'ingreso' ? 'Ingreso' : 'Egreso'}</span></div><div class="money">${money(x.type === 'ingreso' ? x.amount : -x.amount)}</div><div class="btns"><button class="bad" onclick="deleteCash('${x.id}')">Borrar</button></div></div>`).join('') : `<div class="empty">Todavía no hay movimientos de caja.</div>`
         }
+        function normalizePlate(plate) {
+            return (plate || '')
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/\s+/g, '')
+                .toUpperCase()
+                .trim();
+        }
         function renderClients() {
-            const q = (clientSearch.value || '').toLowerCase();
+
+            const q = (clientSearch.value || '').toLowerCase().trim();
+
             const map = new Map();
+
             for (const o of state.orders) {
-                const key = `${(o.client_name || '').trim().toLowerCase()}|${(o.phone || '').trim()}`;
-                if (!key.trim() || key.startsWith('|')) continue;
-                if (!map.has(key)) map.set(key,
-                    {
-                        name: o.client_name,
-                        phone: o.phone,
-                        orders: 0, total: 0,
-                        last: o.created_at,
-                        vehicles: new Set()
+
+                const plateKey = normalizePlate(o.plate);
+
+                if (!plateKey) continue;
+
+                if (!map.has(plateKey)) {
+
+                    map.set(plateKey, {
+                        plate: o.plate,
+                        brand: o.brand || '',
+                        model: o.model || '',
+                        client_name: o.client_name || '',
+                        phone: o.phone || '',
+                        orders: [],
+                        total: 0,
+                        last: o.created_at
                     });
-                const c = map.get(key);
-                c.orders += 1;
-                c.total += Number(o.total || 0);
-                c.last = new Date(c.last) > new Date(o.created_at) ? c.last : o.created_at;
-                c.vehicles.add(`${o.brand} ${o.model}`.trim())
+
+                }
+
+                const vehicle = map.get(plateKey);
+
+                vehicle.orders.push(o);
+
+                vehicle.total += Number(o.total || 0);
+
+                if (new Date(o.created_at) > new Date(vehicle.last)) {
+
+                    vehicle.last = o.created_at;
+
+                    if (o.brand) vehicle.brand = o.brand;
+                    if (o.model) vehicle.model = o.model;
+
+                    if (o.client_name) vehicle.client_name = o.client_name;
+                    if (o.phone) vehicle.phone = o.phone;
+
+                    if (o.plate) vehicle.plate = o.plate;
+                }
             }
-            const items = [...map.values()].filter(c => `${c.name} ${c.phone} ${[...c.vehicles].join(' ')}`.toLowerCase().includes(q)).sort((a, b) => new Date(b.last) - new Date(a.last)); clientsList.innerHTML = items.length ? items.map(c => `<div class="item"><div><div class="title">${c.name}</div><div class="mini">${c.phone || '-'}</div></div><div><div class="mini">Autos</div><div>${[...c.vehicles].join(', ')}</div></div><div><div class="mini">Trabajos</div><div>${c.orders}</div></div><div><div class="money">${money(c.total)}</div><div class="mini">Facturado</div></div></div>`).join('') : `<div class="empty">No encontré clientes.</div>`
+
+            const items = [...map.values()]
+                .filter(vehicle => {
+
+                    const haystack = `
+                        ${vehicle.plate}
+                        ${vehicle.brand}
+                        ${vehicle.model}
+                        ${vehicle.client_name}
+                        ${vehicle.phone}
+                        ${vehicle.orders.map(o => o.notes || '').join(' ')}
+                        ${vehicle.orders.flatMap(o =>
+                        (o.services || []).map(s => s.name)
+                    ).join(' ')}
+                    `.toLowerCase();
+
+                    return haystack.includes(q);
+                })
+                .sort(
+                    (a, b) =>
+                        new Date(b.last) - new Date(a.last)
+                );
+
+            clientsList.innerHTML = items.length
+                ? items.map(vehicle => {
+
+                    const history = [...vehicle.orders]
+                        .sort(
+                            (a, b) =>
+                                new Date(b.created_at) -
+                                new Date(a.created_at)
+                        );
+
+                    return `
+                        <div class="item">
+
+                            <div>
+
+                                <div class="title">
+                                    ${vehicle.plate}
+                                </div>
+
+                                <div class="mini">
+                                    ${vehicle.brand} ${vehicle.model}
+                                </div>
+
+                                <div class="mini">
+                                    ${vehicle.client_name || 'Cliente no registrado'}
+                                </div>
+
+                                <div class="mini">
+                                    ${vehicle.phone || '-'}
+                                </div>
+
+                            </div>
+
+                            <div>
+
+                                <div class="mini">
+                                    Trabajos anteriores
+                                </div>
+
+                                <div>
+                                    ${history.length}
+                                </div>
+
+                            </div>
+
+                            <div>
+
+                                <div class="mini">
+                                    Historial
+                                </div>
+
+                                <div>
+                                    ${history.map(o => `
+                                        <div style="margin-bottom:8px;">
+
+                                            <strong>
+                                                ${new Date(o.created_at)
+                            .toLocaleDateString('es-UY')}
+                                            </strong>
+
+                                            <div class="mini">
+                                                ${(o.services || [])
+                            .map(s => s.name)
+                            .join(', ')
+                        ||
+                        o.notes ||
+                        'Trabajo manual'
+                        }
+                                            </div>
+
+                                            <div class="mini">
+                                                Total: ${money(o.total)}
+                                            </div>
+
+                                        </div>
+                                    `).join('')}
+                                </div>
+
+                            </div>
+
+                            <div>
+
+                                <div class="money">
+                                    ${money(vehicle.total)}
+                                </div>
+
+                                <div class="mini">
+                                    Total facturado
+                                </div>
+
+                            </div>
+
+                        </div>
+                    `;
+
+                }).join('')
+
+                : `<div class="empty">
+                    No encontré vehículos.
+                </div>`;
         }
         function renderDashboard() {
             const open = state.orders.filter(o => o.status !== 'entregado').reduce((a, o) => a + Math.max(0, Number(o.total || 0) - Number(o.paid || 0)), 0),
@@ -1992,21 +2897,43 @@
         function closeSettings() {
             document.getElementById('settingsSheet').classList.remove('open');
         }
+
         function exportBackup() {
+
             const data = {
                 exported_at: nowIso(),
-                state,
-                cloud: { ...cloud, supabaseKey: cloud.supabaseKey ? '*** oculto en exportación ***' : '' }
+
+                state: {
+                    orders: state.orders || [],
+                    cash: state.cash || []
+                }
             };
-            const blob = new Blob([JSON.stringify(data, null, 2)],
-                { type: 'application/json' });
+
+            const blob = new Blob(
+                [JSON.stringify(data, null, 2)],
+                {
+                    type: 'application/json'
+                }
+            );
+
+            const url = URL.createObjectURL(blob);
+
             const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `aeme-pro-backup-${todayLocalISO()}.json`;
+
+            a.href = url;
+
+            a.download =
+                `aeme-pro-backup-${todayLocalISO()}.json`;
+
             document.body.appendChild(a);
+
             a.click();
-            a.remove()
+
+            a.remove();
+
+            URL.revokeObjectURL(url);
         }
+
         function importBackup(e) {
             const f = e.target.files?.[0];
             if (!f) return;
@@ -2156,6 +3083,8 @@
 
         function updateCloudBadge(user = null) {
 
+            currentUser = user;
+
             const badge =
                 document.getElementById('cloudBadge');
 
@@ -2186,7 +3115,7 @@
             `;
 
             badge.title =
-                'No hay una sesión activa';
+                'Los datos se guardan solamente en este dispositivo';
         }
 
         async function restoreSession() {
@@ -2203,6 +3132,8 @@
                     error
                 );
 
+                currentUser = null;
+
                 updateCloudBadge(null);
 
                 return;
@@ -2212,20 +3143,24 @@
 
             if (session?.user) {
 
+                currentUser = session.user;
+
                 console.log(
                     'Sesión restaurada:',
-                    session.user.email
+                    currentUser.email
                 );
 
-                updateCloudBadge(session.user);
+                updateCloudBadge(currentUser);
 
                 document.getElementById('authStatus').textContent =
                     'Sesión iniciada: ' +
-                    session.user.email;
+                    currentUser.email;
 
                 await loadDataFromSupabase();
 
             } else {
+
+                currentUser = null;
 
                 console.log(
                     'No hay sesión activa.'
@@ -2244,13 +3179,17 @@
 
                 if (session?.user) {
 
-                    updateCloudBadge(session.user);
+                    currentUser = session.user;
+
+                    updateCloudBadge(currentUser);
 
                     document.getElementById('authStatus').textContent =
                         'Sesión iniciada: ' +
-                        session.user.email;
+                        currentUser.email;
 
                 } else {
+
+                    currentUser = null;
 
                     updateCloudBadge(null);
 
@@ -2280,12 +3219,18 @@
                 return;
             }
 
+            currentUser = null;
+
             updateCloudBadge(null);
 
             document.getElementById('authStatus').textContent =
                 'Sin sesión';
 
             alert('Sesión cerrada.');
+        }
+
+        function isCloudMode() {
+            return !!supabaseClient?.auth?.getSession;
         }
 
         document.addEventListener('keydown', e => {
