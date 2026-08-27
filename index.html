@@ -2775,8 +2775,6 @@
                         plate: o.plate,
                         brand: o.brand || '',
                         model: o.model || '',
-                        client_name: o.client_name || '',
-                        phone: o.phone || '',
                         orders: [],
                         total: 0,
                         last: o.created_at
@@ -2796,10 +2794,6 @@
 
                     if (o.brand) vehicle.brand = o.brand;
                     if (o.model) vehicle.model = o.model;
-
-                    if (o.client_name) vehicle.client_name = o.client_name;
-                    if (o.phone) vehicle.phone = o.phone;
-
                     if (o.plate) vehicle.plate = o.plate;
                 }
             }
@@ -2811,12 +2805,9 @@
                         ${vehicle.plate}
                         ${vehicle.brand}
                         ${vehicle.model}
-                        ${vehicle.client_name}
-                        ${vehicle.phone}
+                        ${vehicle.orders.map(o => o.client_name || '').join(' ')}
+                        ${vehicle.orders.map(o => o.phone || '').join(' ')}
                         ${vehicle.orders.map(o => o.notes || '').join(' ')}
-                        ${vehicle.orders.flatMap(o =>
-                        (o.services || []).map(s => s.name)
-                    ).join(' ')}
                     `.toLowerCase();
 
                     return haystack.includes(q);
@@ -2836,6 +2827,26 @@
                                 new Date(a.created_at)
                         );
 
+                    // Personas distintas que trajeron el mismo vehículo
+                    const peopleMap = new Map();
+
+                    history.forEach(o => {
+
+                        const name = (o.client_name || 'Cliente no registrado').trim();
+                        const phone = (o.phone || '').trim();
+
+                        const key = `${name.toLowerCase()}|${phone}`;
+
+                        if (!peopleMap.has(key)) {
+                            peopleMap.set(key, {
+                                name,
+                                phone
+                            });
+                        }
+                    });
+
+                    const people = [...peopleMap.values()];
+
                     return `
                         <div class="item">
 
@@ -2850,12 +2861,25 @@
                                 </div>
 
                                 <div class="mini">
-                                    ${vehicle.client_name || 'Cliente no registrado'}
+                                    ${people.length === 1
+                            ? people[0].name
+                            : `${people.length} personas`}
                                 </div>
 
-                                <div class="mini">
-                                    ${vehicle.phone || '-'}
-                                </div>
+                                ${people.length > 1 ? `
+                                    <div class="mini" style="margin-top:6px;">
+                                        ${people.map(person => `
+                                            <div>
+                                                • ${person.name}
+                                                ${person.phone ? ` · ${person.phone}` : ''}
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                ` : `
+                                    <div class="mini">
+                                        ${people[0]?.phone || '-'}
+                                    </div>
+                                `}
 
                             </div>
 
@@ -2879,21 +2903,30 @@
 
                                 <div>
                                     ${history.map(o => `
-                                        <div style="margin-bottom:8px;">
+                                        <div style="margin-bottom:12px;">
 
                                             <strong>
                                                 ${new Date(o.created_at)
-                            .toLocaleDateString('es-UY')}
+                                                .toLocaleDateString('es-UY')}
                                             </strong>
 
                                             <div class="mini">
-                                                ${(o.services || [])
-                            .map(s => s.name)
-                            .join(', ')
-                        ||
-                        o.notes ||
-                        'Trabajo manual'
-                        }
+                                                Cliente:
+                                                ${o.client_name || 'Sin nombre'}
+                                                ${o.phone ? ` · ${o.phone}` : ''}
+                                            </div>
+
+                                            <div
+                                                class="work-notes-preview"
+                                                data-notes="${encodeURIComponent(o.notes || '')}"
+                                                data-expanded="false"
+                                            >
+                                                <div class="work-notes-title">Trabajos</div>
+                                                
+                                                ${o.notes
+                                                    ? formatWorkNotes(o.notes)
+                                                    : '<div class="mini">Sin trabajos registrados</div>'
+                                                }
                                             </div>
 
                                             <div class="mini">
@@ -2927,6 +2960,7 @@
                     No encontré vehículos.
                 </div>`;
         }
+
         function renderDashboard() {
             const open = state.orders.filter(o => o.status !== 'entregado').reduce((a, o) => a + Math.max(0, Number(o.total || 0) - Number(o.paid || 0)), 0),
                 paid = state.orders.reduce((a, o) => a + Number(o.paid || 0), 0),
