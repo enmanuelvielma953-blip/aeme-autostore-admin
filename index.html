@@ -442,7 +442,7 @@
             max-width: var(--max);
             margin: 0 auto;
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             gap: 8px
         }
 
@@ -1116,7 +1116,160 @@
             cursor: pointer;
             font-size: 13px;
             font-weight: 600;
-        }   
+        }
+
+        .pending-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .pending-header h2 {
+            margin-bottom: 4px !important;
+        }
+
+        .pending-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 11px;
+            border-radius: 999px;
+            background: rgba(79, 208, 143, .08);
+            border: 1px solid rgba(79, 208, 143, .18);
+            color: var(--muted);
+            font-size: 11px;
+            white-space: nowrap;
+        }
+
+        .pending-summary {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .pending-card {
+            padding: 15px;
+            border-radius: 17px;
+            background:
+                linear-gradient(180deg,
+                    rgba(255, 255, 255, .045),
+                    rgba(255, 255, 255, .015)),
+                #0e1621;
+            border: 1px solid var(--line);
+        }
+
+        .pending-card-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: .75px;
+            color: var(--muted);
+        }
+
+        .pending-card-value {
+            margin-top: 7px;
+            font-size: 24px;
+            font-weight: 1000;
+            letter-spacing: -.7px;
+            color: var(--text);
+        }
+
+        .pending-gold {
+            color: var(--gold);
+        }
+
+        .pending-green {
+            color: var(--green);
+        }
+
+        .pending-item {
+            display: grid;
+            grid-template-columns: 1.35fr .8fr .9fr auto;
+            gap: 14px;
+            align-items: center;
+            padding: 16px;
+            border: 1px solid var(--line);
+            border-radius: 17px;
+            background:
+                linear-gradient(180deg,
+                    rgba(255, 255, 255, .025),
+                    rgba(255, 255, 255, .01)),
+                #0e1621;
+        }
+
+        .pending-item:hover {
+            border-color:
+                rgba(231, 196, 106, .32);
+        }
+
+        .pending-balance {
+            color: var(--red);
+            font-size: 19px;
+            font-weight: 1000;
+        }
+
+        .pending-balance-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: .7px;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+
+        .pending-progress {
+            height: 6px;
+            margin-top: 8px;
+            border-radius: 999px;
+            overflow: hidden;
+            background: #202b39;
+        }
+
+        .pending-progress-bar {
+            height: 100%;
+            border-radius: inherit;
+            background:
+                linear-gradient(90deg,
+                    var(--gold),
+                    #f4dc91);
+            transition: width .25s ease;
+        }
+
+        .pending-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        @media (max-width: 800px) {
+            .pending-item {
+                grid-template-columns: 1fr;
+            }
+
+            .pending-actions {
+                justify-content: flex-start;
+            }
+        }
+
+        @media (max-width: 580px) {
+            .pending-summary {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .pending-summary .pending-card:first-child {
+                grid-column: 1 / -1;
+            }
+
+            .pending-card-value {
+                font-size: 21px;
+            }
+
+            .pending-header {
+                align-items: flex-start;
+            }
+        }
     </style>
 </head>
 
@@ -1232,7 +1385,7 @@
                                 onclick="setOrdersFilter('listo', this)">Listos</button></div>
                         <div class="toolbar">
                             <input id="orderSearch" placeholder="Buscar cliente, auto o matrícula..."
-                                oninput="renderOrders()" />
+                                oninput="syncSearch('orderSearch','orderSearch2'); renderOrders()" />
 
                             <button class="sec" onclick="openSettings()">
                                 Configuración
@@ -1304,6 +1457,63 @@
                 <div id="clientsList" class="list"></div>
             </div>
         </section>
+        <section id="pendingView" class="view hidden">
+            <div class="panel">
+                <div class="pending-header">
+                    <div>
+                        <h2>Pagos pendientes</h2>
+                        <div class="mini">
+                            Órdenes con saldo pendiente de cobro
+                        </div>
+                    </div>
+                    <div class="pending-status">
+                        <span class="sync-dot ok"></span>
+                        Base de datos
+                    </div>
+                </div>
+                <div class="pending-summary">
+                    <div class="pending-card">
+                        <div class="pending-card-label">
+                            Total pendiente
+                        </div>
+                        <div id="pendingTotal" class="pending-card-value pending-gold">
+                            $ 0
+                        </div>
+                    </div>
+
+                    <div class="pending-card">
+                        <div class="pending-card-label">
+                            Órdenes pendientes
+                        </div>
+                        <div id="pendingCount" class="pending-card-value">
+                            0
+                        </div>
+                    </div>
+                </div>
+                <div class="toolbar">
+                    <input id="pendingSearch" placeholder="Buscar cliente, auto o matrícula..."
+                        oninput="renderPendingPayments()" />
+                    <select id="pendingStatusFilter" onchange="renderPendingPayments()">
+                        <option value="">
+                            Todos los estados
+                        </option>
+                        <option value="nuevo">
+                            Nuevo
+                        </option>
+                        <option value="proceso">
+                            En proceso
+                        </option>
+                        <option value="listo">
+                            Listo
+                        </option>
+                        <option value="entregado">
+                            Entregado
+                        </option>
+                    </select>
+                </div>
+                <div id="pendingList" class="list"></div>
+            </div>
+        </section>
     </div>
     <div id="settingsSheet" class="sheet">
         <div class="wrap">
@@ -1349,7 +1559,8 @@
     <div class="nav">
         <div class="inner"><button class="nav-btn active" data-view="dashboard"
                 onclick="showView('dashboard', this)">Inicio</button><button class="nav-btn" data-view="orders"
-                onclick="showView('orders', this)">Órdenes</button><button class="nav-btn" data-view="cash"
+                onclick="showView('orders', this)">Órdenes</button><button class="nav-btn" data-view="pending"
+                onclick="showView('pending', this)">Pendientes</button><button class="nav-btn" data-view="cash"
                 onclick="showView('cash', this)">Caja</button><button class="nav-btn" data-view="clients"
                 onclick="showView('clients', this)">Clientes</button></div>
     </div>
@@ -2647,17 +2858,254 @@
             }
         }
 
-        function renderOrders() {
-            const q = (document.getElementById('orderSearch')?.value || document.getElementById('orderSearch2')?.value || '').toLowerCase();
+        function renderPendingPayments() {
 
-            if (orderSearch2) orderSearch2.value = q;
-            if (orderSearch) orderSearch.value = q;
+            const search =
+                (document.getElementById('pendingSearch')?.value || '')
+                    .toLowerCase()
+                    .trim();
+
+            const statusFilter = document.getElementById('pendingStatusFilter')?.value || '';
+
+            const pendingOrders =
+                state.orders.filter(order => {
+                    const total = Number(order.total || 0);
+                    const paid = Number(order.paid || 0);
+                    const remaining = Math.max(0, total - paid);
+                    return remaining > 0;
+                });
+
+            const totalPending =
+                pendingOrders.reduce((sum, order) => {
+                    const total = Number(order.total || 0);
+                    const paid = Number(order.paid || 0);
+                    return sum + Math.max(0, total - paid);
+                }, 0);
+
+            const totalElement = document.getElementById('pendingTotal');
+            const countElement = document.getElementById('pendingCount');
+
+            if (totalElement) {
+                totalElement.textContent = money(totalPending);
+            }
+
+            if (countElement) {
+                countElement.textContent = pendingOrders.length;
+            }
+
+            let items = [...pendingOrders];
+
+            if (statusFilter) {
+                items =
+                    items.filter(
+                        order =>
+                            order.status === statusFilter
+                    );
+            }
+
+            if (search) {
+
+                items =
+                    items.filter(order => {
+
+                        const haystack = `
+                            ${order.client_name || ''}
+                            ${order.phone || ''}
+                            ${order.brand || ''}
+                            ${order.model || ''}
+                            ${order.plate || ''}
+                            ${order.notes || ''}
+                        `.toLowerCase();
+
+                        return haystack.includes(search);
+                    });
+
+            }
+
+            items.sort((a, b) => {
+                const remainingA = Math.max(0, Number(a.total || 0) - Number(a.paid || 0));
+                const remainingB = Math.max(0, Number(b.total || 0) - Number(b.paid || 0));
+
+                return remainingB - remainingA;
+            });
+
+
+            const container = document.getElementById('pendingList');
+
+            if (!container) return;
+
+            if (!items.length) {
+
+                container.innerHTML = `
+                    <div class="empty">
+
+                        <div style="font-size:28px;margin-bottom:8px;">
+                            ✓
+                        </div>
+
+                        <div style="font-weight:900;">
+                            No hay pagos pendientes
+                        </div>
+
+                        <div class="mini" style="margin-top:5px;">
+                            Todas las órdenes están completamente cobradas.
+                        </div>
+
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML =
+                items.map(order => {
+
+                    const total = Number(order.total || 0);
+                    const paid = Number(order.paid || 0);
+                    const remaining = Math.max(0, total - paid);
+
+
+                    const percentage = total > 0 ? Math.min(100, (paid / total) * 100) : 0;
+
+
+                    const vehicle =
+                        `${order.brand || ''} ${order.model || ''}`
+                            .trim();
+
+                    return `
+                        <div class="pending-item">
+
+
+                            <!-- CLIENTE -->
+
+                            <div>
+
+                                <div class="title">
+                                    ${order.client_name || 'Cliente sin nombre'}
+                                </div>
+
+                                <div class="mini">
+                                    ${vehicle || 'Vehículo'}
+                                    ·
+                                    ${order.plate || 'Sin matrícula'}
+                                </div>
+
+                                <div class="mini">
+                                    ${order.phone || 'Sin teléfono'}
+                                </div>
+
+                                <div class="mini">
+                                    Entrega:
+                                    ${order.due_date || '-'}
+                                </div>
+
+                            </div>
+
+
+                            <!-- TOTAL -->
+
+                            <div>
+
+                                <div class="mini">
+                                    Total
+                                </div>
+
+                                <div class="money">
+                                    ${money(total)}
+                                </div>
+
+                                <div class="mini">
+                                    Cobrado:
+                                    ${money(paid)}
+                                </div>
+
+
+                                <div class="pending-progress">
+
+                                    <div
+                                        class="pending-progress-bar"
+                                        style="width:${percentage}%"
+                                    ></div>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- SALDO -->
+
+                            <div>
+
+                                <div class="pending-balance-label">
+                                    Saldo pendiente
+                                </div>
+
+                                <div class="pending-balance">
+                                    ${money(remaining)}
+                                </div>
+
+                                <div class="mini">
+                                    ${percentage.toFixed(0)}% cobrado
+                                </div>
+
+                            </div>
+
+
+                            <!-- ACCIONES -->
+
+                            <div>
+
+                                <span class="pill ${order.status}">
+                                    ${statusLabel(order.status)}
+                                </span>
+
+
+                                <div
+                                    class="pending-actions"
+                                    style="margin-top:8px;"
+                                >
+
+                                    <button
+                                        class="good"
+                                        onclick="markPaid('${order.id}')"
+                                    >
+                                        Cobrar
+                                    </button>
+
+                                    <button
+                                        class="sec"
+                                        onclick="editOrder('${order.id}')"
+                                    >
+                                        Ver
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+
+                        </div>
+                    `;
+
+                }).join('');
+        }
+
+        function renderOrders() {
+            const orderSearch = document.getElementById('orderSearch');
+            const orderSearch2 = document.getElementById('orderSearch2');
+
+            const q = (
+                orderSearch?.value ??
+                orderSearch2?.value ??
+                ''
+            ).trim().toLowerCase();
 
             let items = [...state.orders]
                 .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
             items = items.filter(
-                o => ordersFilter === 'todos' ? true : o.status === ordersFilter
+                o => ordersFilter === 'todos'
+                    ? true
+                    : o.status === ordersFilter
             );
 
             items = items.filter(o => orderMatchesSearch(o, q));
@@ -2675,6 +3123,7 @@
 
             loadOrderImageUrls();
         }
+        
         async function addCashEntry() {
             const amount = Number(cashAmount.value || 0);
 
@@ -2827,7 +3276,6 @@
                                 new Date(a.created_at)
                         );
 
-                    // Personas distintas que trajeron el mismo vehículo
                     const peopleMap = new Map();
 
                     history.forEach(o => {
@@ -2907,7 +3355,7 @@
 
                                             <strong>
                                                 ${new Date(o.created_at)
-                                                .toLocaleDateString('es-UY')}
+                                    .toLocaleDateString('es-UY')}
                                             </strong>
 
                                             <div class="mini">
@@ -2924,9 +3372,9 @@
                                                 <div class="work-notes-title">Trabajos</div>
                                                 
                                                 ${o.notes
-                                                    ? formatWorkNotes(o.notes)
-                                                    : '<div class="mini">Sin trabajos registrados</div>'
-                                                }
+                                    ? formatWorkNotes(o.notes)
+                                    : '<div class="mini">Sin trabajos registrados</div>'
+                                }
                                             </div>
 
                                             <div class="mini">
@@ -2976,7 +3424,8 @@
             renderDashboard();
             renderOrders();
             renderCash();
-            renderClients()
+            renderClients();
+            renderPendingPayments()
         }
         function showView(name) {
             document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
@@ -3326,7 +3775,7 @@
         function isCloudMode() {
             return !!supabaseClient?.auth?.getSession;
         }
-        
+
         function toggleWorkNotes(button) {
             const container = button.closest('.work-notes-preview');
 
