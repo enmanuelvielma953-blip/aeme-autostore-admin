@@ -1417,36 +1417,133 @@
             <div class="panel">
                 <h2>Caja</h2>
                 <div class="row">
-                    <div class="field"><label>Tipo</label><select id="cashType">
+                    <div class="field">
+                        <label>Tipo</label>
+
+                        <select id="cashType" onchange="updateCashForm()">
                             <option value="ingreso">Ingreso</option>
                             <option value="egreso">Egreso</option>
-                        </select></div>
-                    <div class="field"><label>Método</label><input id="cashMethod"
-                            placeholder="Efectivo, transferencia..." />
+                        </select>
                     </div>
+
+                    <div class="field">
+                        <label>Método</label>
+
+                        <select id="cashMethod">
+                            <option value="">Seleccionar método</option>
+                            <option value="Efectivo">Efectivo</option>
+                            <option value="Transferencia">Transferencia</option>
+                            <option value="Débito">Débito</option>
+                            <option value="Crédito">Crédito</option>
+                            <option value="Mercado Pago">Mercado Pago</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+
+                    </div>
+
                 </div>
+
                 <div class="row">
-                    <div class="field"><label>Categoría</label><input id="cashCategory"
-                            placeholder="Lavado, insumos, sueldo..." /></div>
-                    <div class="field"><label>Monto</label><input id="cashAmount" type="number" min="0" step="100" />
+
+                    <div class="field">
+                        <label>Categoría</label>
+
+                        <select id="cashCategory">
+                            <option value="">Seleccionar categoría...</option>
+                            <option value="Repuesto">Repuesto</option>
+                            <option value="Insumos">Insumos</option>
+                            <option value="Herramientas">Herramientas</option>
+                            <option value="Lavado">Lavado</option>
+                            <option value="Tercerizado">Trabajo tercerizado</option>
+                            <option value="Combustible">Combustible</option>
+                            <option value="Sueldo">Sueldo</option>
+                            <option value="Alquiler">Alquiler</option>
+                            <option value="Servicios">Servicios</option>
+                            <option value="Impuestos">Impuestos</option>
+                            <option value="Otros">Otros</option>
+                        </select>
+
                     </div>
+
+                    <div class="field">
+
+                        <label>Monto</label>
+
+                        <input id="cashAmount" type="number" min="0" step="1" placeholder="$ 0" />
+
+                    </div>
+
                 </div>
-                <div class="field"><label>Detalle</label><input id="cashDescription"
-                        placeholder="Ej: cobro BMW, compra productos..." /></div>
-                <div class="btns"><button class="good" onclick="addCashEntry()">Guardar movimiento</button><button
-                        class="sec" onclick="clearCashForm()">Limpiar</button></div>
-                <div class="small-note">Caja del día = ingresos - egresos cargados hoy.</div>
+
+
+                <div class="field">
+
+                    <label>Orden asociada</label>
+
+                    <select id="cashOrder">
+
+                        <option value="">
+                            Sin orden asociada
+                        </option>
+
+                    </select>
+
+                    <div class="small-note">
+                        Opcional. Usalo cuando el movimiento corresponda a un auto u orden específica.
+                    </div>
+
+                </div>
+
+
+                <div class="field">
+
+                    <label>Detalle</label>
+
+                    <input id="cashDescription" placeholder="Ej: compra de pantalla para BMW..." />
+
+                </div>
+
+
+                <div class="btns">
+
+                    <button class="good" onclick="addCashEntry()">
+                        Guardar movimiento
+                    </button>
+
+                    <button class="sec" onclick="clearCashForm()">
+                        Limpiar
+                    </button>
+
+                </div>
+
+
+                <div class="small-note">
+                    Caja del día = ingresos - egresos cargados hoy.
+                </div>
+
             </div>
+
+
             <div class="panel mt8">
+
                 <h2>Movimientos</h2>
-                <div class="toolbar"><input id="cashSearch" placeholder="Buscar en caja..."
-                        oninput="renderCash()" /><select id="cashFilter" onchange="renderCash()">
+
+                <div class="toolbar">
+
+                    <input id="cashSearch" placeholder="Buscar en caja..." oninput="renderCash()" />
+
+                    <select id="cashFilter" onchange="renderCash()">
                         <option value="">Todos</option>
                         <option value="ingreso">Ingresos</option>
                         <option value="egreso">Egresos</option>
-                    </select></div>
+                    </select>
+
+                </div>
+
                 <div id="cashList" class="list"></div>
+
             </div>
+
         </section>
         <section id="clientsView" class="view hidden">
             <div class="panel">
@@ -1465,10 +1562,6 @@
                         <div class="mini">
                             Órdenes con saldo pendiente de cobro
                         </div>
-                    </div>
-                    <div class="pending-status">
-                        <span class="sync-dot ok"></span>
-                        Base de datos
                     </div>
                 </div>
                 <div class="pending-summary">
@@ -1705,6 +1798,164 @@
         </div>
 
     </div>
+    <div id="expenseModal" class="modal-overlay hidden">
+
+        <div class="modal-card">
+
+            <div class="modal-header">
+
+                <div>
+                    <h2>Registrar gasto</h2>
+                    <div id="expenseVehicle" class="mini"></div>
+                </div>
+
+                <button type="button" class="sec" onclick="closeExpenseModal()">
+                    ✕
+                </button>
+
+            </div>
+
+            <div class="payment-summary">
+
+                <div>
+                    <span>Auto</span>
+                    <strong id="expenseOrderNumber">#</strong>
+                </div>
+
+                <div>
+                    <span>Gastos del auto</span>
+                    <strong id="expenseAlreadySpent">$ 0</strong>
+                </div>
+
+                <div>
+                    <span>Nuevo gasto</span>
+                    <strong id="expenseNewAmount">$ 0</strong>
+                </div>
+
+            </div>
+
+            <div class="field">
+
+                <label for="expenseAmount">
+                    Monto del gasto
+                </label>
+
+                <input id="expenseAmount" type="number" min="0" step="1" placeholder="$ 0" />
+
+            </div>
+
+            <div class="field">
+
+                <label for="expenseCategory">
+                    Categoría
+                </label>
+
+                <select id="expenseCategory">
+
+                    <option value="">
+                        Seleccionar categoría...
+                    </option>
+
+                    <option value="Repuesto">
+                        Repuesto
+                    </option>
+
+                    <option value="Insumos">
+                        Insumos
+                    </option>
+
+                    <option value="Herramientas">
+                        Herramientas
+                    </option>
+
+                    <option value="Lavado">
+                        Lavado
+                    </option>
+
+                    <option value="Tercerizado">
+                        Trabajo tercerizado
+                    </option>
+
+                    <option value="Combustible">
+                        Combustible
+                    </option>
+
+                    <option value="Sueldo">
+                        Sueldo
+                    </option>
+
+                    <option value="Otros">
+                        Otros
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div class="field">
+
+                <label for="expenseMethod">
+                    Método de pago
+                </label>
+
+                <select id="expenseMethod">
+
+                    <option value="">
+                        Seleccionar método
+                    </option>
+
+                    <option value="Efectivo">
+                        Efectivo
+                    </option>
+
+                    <option value="Transferencia">
+                        Transferencia
+                    </option>
+
+                    <option value="Débito">
+                        Débito
+                    </option>
+
+                    <option value="Crédito">
+                        Crédito
+                    </option>
+
+                    <option value="Mercado Pago">
+                        Mercado Pago
+                    </option>
+
+                    <option value="Otro">
+                        Otro
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div class="field">
+
+                <label for="expenseDescription">
+                    Detalle
+                </label>
+
+                <input id="expenseDescription" placeholder="Ej: compra de pintura, repuesto..." />
+
+            </div>
+
+            <div class="payment-footer">
+
+                <button type="button" class="sec" onclick="closeExpenseModal()">
+                    Cancelar
+                </button>
+
+                <button type="button" class="warn" onclick="confirmExpense()">
+                    Registrar gasto
+                </button>
+
+            </div>
+
+        </div>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="./js/supabase.js"></script>
     <script src="./js/images.js"></script>
@@ -1875,7 +2126,11 @@
             }
         }
         function saveState() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); renderAll()
+            localStorage.setItem(
+                STORAGE_KEY,
+                JSON.stringify(state)
+            );
+            renderAll()
         }
         function uid() {
             return window.crypto?.randomUUID ? crypto.randomUUID() : 'id-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9)
@@ -2161,6 +2416,7 @@
         }
 
         let paymentOrderId = null;
+        let expenseOrderId = null;
 
         function markPaid(id) {
 
@@ -2221,6 +2477,85 @@
                 amountInput.focus();
                 amountInput.select();
             }, 50);
+        }
+
+        function getOrderExpenses(orderId) {
+
+            return state.cash.filter(entry =>
+                entry.type === 'egreso' &&
+                entry.order_id === orderId
+            );
+        }
+
+        function getOrderExpenseTotal(orderId) {
+
+            return getOrderExpenses(orderId)
+                .reduce(
+                    (sum, entry) =>
+                        sum + Number(entry.amount || 0),
+                    0
+                );
+        }
+
+        function openExpenseModal(orderId) {
+
+            const order =
+                state.orders.find(x => x.id === orderId);
+
+            if (!order) {
+                alert('No se encontró la orden.');
+                return;
+            }
+
+            expenseOrderId = orderId;
+
+            const vehicle =
+                `${order.brand || ''} ${order.model || ''}`
+                    .trim();
+
+            const spent =
+                getOrderExpenseTotal(orderId);
+
+            document.getElementById('expenseVehicle').textContent =
+                `${vehicle || 'Vehículo'} · ${order.plate || 'Sin matrícula'}`;
+
+            document.getElementById('expenseOrderNumber').textContent =
+                `#${String(order.id).slice(0, 8)}`;
+
+            document.getElementById('expenseAlreadySpent').textContent =
+                money(spent);
+
+            document.getElementById('expenseNewAmount').textContent =
+                money(0);
+
+            document.getElementById('expenseAmount').value = '';
+
+            document.getElementById('expenseCategory').value = '';
+
+            document.getElementById('expenseMethod').value = '';
+
+            document.getElementById('expenseDescription').value = '';
+
+            document
+                .getElementById('expenseModal')
+                .classList.remove('hidden');
+
+            setTimeout(() => {
+
+                document
+                    .getElementById('expenseAmount')
+                    .focus();
+
+            }, 50);
+        }
+
+        function closeExpenseModal() {
+
+            expenseOrderId = null;
+
+            document
+                .getElementById('expenseModal')
+                .classList.add('hidden');
         }
 
         function closePaymentModal() {
@@ -2482,6 +2817,162 @@
             );
         }
 
+        async function confirmExpense() {
+
+            if (!expenseOrderId) {
+                return;
+            }
+
+            const order =
+                state.orders.find(
+                    x => x.id === expenseOrderId
+                );
+
+            if (!order) {
+
+                alert('No se encontró la orden.');
+
+                closeExpenseModal();
+
+                return;
+            }
+
+            const amount =
+                Number(
+                    document
+                        .getElementById('expenseAmount')
+                        .value || 0
+                );
+
+            const category =
+                document
+                    .getElementById('expenseCategory')
+                    .value
+                    .trim();
+
+            const method =
+                document
+                    .getElementById('expenseMethod')
+                    .value
+                    .trim();
+
+            const description =
+                document
+                    .getElementById('expenseDescription')
+                    .value
+                    .trim();
+
+
+            if (!Number.isFinite(amount) || amount <= 0) {
+
+                alert('Ingresá un monto mayor que 0.');
+
+                return;
+            }
+
+
+            if (!category) {
+
+                alert('Seleccioná una categoría.');
+
+                return;
+            }
+
+
+            if (!method) {
+
+                alert('Seleccioná el método de pago.');
+
+                return;
+            }
+
+
+            if (!description) {
+
+                alert('Ingresá una descripción.');
+
+                return;
+            }
+
+
+            const now = nowIso();
+
+
+            const entry = {
+                id: uid(),
+                created_at: now,
+                updated_at: now,
+                type: 'egreso',
+                method,
+                category,
+                amount,
+                description,
+                notes: '',
+                order_id: order.id
+            };
+
+            if (currentUser) {
+
+                const {
+                    error
+                } =
+                    await supabaseClient
+                        .from('cash_entries')
+                        .insert(entry);
+
+
+                if (error) {
+
+                    console.error(
+                        'Error guardando gasto:',
+                        error
+                    );
+
+                    alert(
+                        'No se pudo guardar el gasto en Supabase.'
+                    );
+
+                    return;
+                }
+
+            }
+
+            state.cash.unshift(entry);
+
+            saveState();
+
+            closeExpenseModal();
+
+            const totalSpent =
+                getOrderExpenseTotal(order.id);
+
+            const total =
+                Number(order.total || 0);
+
+            const paid =
+                Number(order.paid || 0);
+
+            const remaining =
+                Math.max(
+                    0,
+                    total - paid
+                );
+
+            const result =
+                total - totalSpent;
+
+            alert(
+                `Gasto registrado correctamente.\n\n` +
+                `Gasto agregado: ${money(amount)}\n` +
+                `Gastos del auto: ${money(totalSpent)}\n` +
+                `Total orden: ${money(total)}\n` +
+                `Cobrado: ${money(paid)}\n` +
+                `Saldo cliente: ${money(remaining)}\n` +
+                `Resultado antes de otros costos: ${money(result)}`
+            );
+
+        }
+
         async function updateOrderStatus(id, newStatus) {
             const o = state.orders.find(x => x.id === id);
             if (!o) return;
@@ -2507,19 +2998,42 @@
 
         async function deleteOrder(id) {
 
-            if (!confirm('¿Eliminar esta orden?')) {
-                return;
-            }
-
-
             const order =
                 state.orders.find(
                     x => x.id === id
                 );
 
+            if (!order) {
+                return;
+            }
 
-            if (!order) return;
+            const total = Number(order.total || 0);
 
+            const paid = Number(order.paid || 0);
+
+            const remaining = Math.max(0, total - paid);
+
+            if (remaining > 0) {
+
+                alert(
+                    `Esta orden NO puede eliminarse.\n\n` +
+                    `Total: ${money(total)}\n` +
+                    `Cobrado: ${money(paid)}\n` +
+                    `Saldo pendiente: ${money(remaining)}\n\n` +
+                    `Primero debe quedar completamente cobrada.`
+                );
+
+                return;
+            }
+
+            if (!confirm(
+                `¿Eliminar esta orden?\n\n` +
+                `${order.brand || ''} ${order.model || ''}` +
+                `${order.plate ? ` · ${order.plate}` : ''}\n\n` +
+                `La orden está completamente cobrada.`
+            )) {
+                return;
+            }
 
             try {
 
@@ -2530,12 +3044,13 @@
                     );
                 }
 
-                const { error } =
+                const {
+                    error
+                } =
                     await supabaseClient
                         .from('orders')
                         .delete()
                         .eq('id', id);
-
 
                 if (error) {
 
@@ -2556,9 +3071,7 @@
                         x => x.id !== id
                     );
 
-
                 saveState();
-
 
             } catch (error) {
 
@@ -2572,8 +3085,6 @@
                 );
             }
         }
-
-
 
         async function duplicateOrder(id) {
             const o = state.orders.find(x => x.id === id);
@@ -2690,6 +3201,10 @@
 
             const images = Array.isArray(o.images) ? o.images : [];
 
+            const orderExpenses = getOrderExpenseTotal(o.id);
+
+            const orderResult = Number(o.total || 0) - orderExpenses;
+
             const imagesMarkup = images.length > 0
                 ? `
                     <div class="order-images-wrapper">
@@ -2769,6 +3284,17 @@
                         Saldo: ${money(Math.max(0, o.total - o.paid))}
                     </div>
 
+                    <div class="mini" style="color:#ffb457;">
+                        Gastos: ${money(orderExpenses)}
+                    </div>
+
+                    <div
+                        class="mini"
+                        style="color:${orderResult >= 0 ? '#4fd08f' : '#ff7070'};"
+                    >
+                        Resultado: ${money(orderResult)}
+                    </div>
+
                     <div class="mini">
                         Entrega: ${o.due_date || '-'}
                     </div>
@@ -2811,6 +3337,10 @@
 
                     <button class="good" onclick="markPaid('${o.id}')">
                         Cobrado
+                    </button>
+
+                    <button class="warn" onclick="openExpenseModal('${o.id}')">
+                        Gasto
                     </button>
 
                     <button class="sec" onclick="duplicateOrder('${o.id}')">
@@ -3123,40 +3653,95 @@
 
             loadOrderImageUrls();
         }
-        
+
+        const cashType = document.getElementById('cashType');
+        const cashMethod = document.getElementById('cashMethod');
+        const cashCategory = document.getElementById('cashCategory');
+        const cashAmount = document.getElementById('cashAmount');
+        const cashDescription = document.getElementById('cashDescription');
+        const cashSearch = document.getElementById('cashSearch');
+        const cashFilter = document.getElementById('cashFilter');
+        const cashList = document.getElementById('cashList');
+
         async function addCashEntry() {
+
             const amount = Number(cashAmount.value || 0);
 
-            if (!amount) {
-                alert('Poné un monto.');
+            if (!Number.isFinite(amount) || amount <= 0) {
+
+                alert('Poné un monto mayor que 0.');
                 return;
             }
 
+            const orderId =
+                document
+                    .getElementById('cashOrder')
+                    .value
+                    .trim();
+
+            if (orderId) {
+
+                const orderExists =
+                    state.orders.some(
+                        order => order.id === orderId
+                    );
+
+                if (!orderExists) {
+
+                    alert(
+                        'La orden seleccionada ya no existe.'
+                    );
+
+                    return;
+                }
+
+            }
+
             const entry = {
+
                 id: uid(),
                 created_at: nowIso(),
                 updated_at: nowIso(),
                 type: cashType.value,
                 method: cashMethod.value.trim(),
                 category: cashCategory.value.trim(),
+
                 amount,
+
                 description: cashDescription.value.trim(),
-                notes: ''
+                notes: '',
+                order_id: orderId || null
             };
+
+            if (currentUser) {
+
+                const {
+                    error
+                } =
+                    await supabaseClient
+                        .from('cash_entries')
+                        .insert(entry);
+
+
+                if (error) {
+
+                    console.error(
+                        'Error guardando movimiento:',
+                        error
+                    );
+
+                    alert(
+                        'No se pudo guardar el movimiento en Supabase.'
+                    );
+
+                    return;
+                }
+
+            }
 
             state.cash.unshift(entry);
             saveState();
-
             clearCashForm();
-
-            const { error } = await supabaseClient
-                .from('cash_entries')
-                .insert(entry);
-
-            if (error) {
-                console.error('Error guardando movimiento:', error);
-                alert('El movimiento quedó localmente, pero no se pudo guardar en Supabase.');
-            }
         }
 
         function clearCashForm() {
@@ -3164,7 +3749,12 @@
             cashMethod.value = '';
             cashCategory.value = '';
             cashAmount.value = '';
-            cashDescription.value = ''
+            cashDescription.value = '';
+            const orderSelect = document.getElementById('cashOrder');
+            
+            if (orderSelect) {
+                orderSelect.value = '';
+            }
         }
 
         async function deleteCash(id) {
@@ -3186,18 +3776,231 @@
 
 
         function renderCash() {
-            const q = (cashSearch.value || '').toLowerCase(),
-                f = cashFilter.value;
-            let items = [...state.cash].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-            items = items.filter(x => (!f || x.type === f));
-            items = items.filter(x => `${x.description} ${x.category} ${x.method}`.toLowerCase().includes(q));
-            cashList.innerHTML = items.length ? items.map(x => `<div class="item">
-                <div><div class="title">
-                    ${x.description || (x.type === 'ingreso' ? 'Ingreso' : 'Egreso')}</div>
-                    <div class="mini">${x.category || '-'} · ${x.method || '-'}</div>
-                    <div class="mini">${new Date(x.created_at).toLocaleString('es-UY')}</div></div>
-                    <div><span class="pill ${x.type === 'ingreso' ? 'listo' : 'nuevo'}">${x.type === 'ingreso' ? 'Ingreso' : 'Egreso'}</span></div><div class="money">${money(x.type === 'ingreso' ? x.amount : -x.amount)}</div><div class="btns"><button class="bad" onclick="deleteCash('${x.id}')">Borrar</button></div></div>`).join('') : `<div class="empty">Todavía no hay movimientos de caja.</div>`
+
+            const q = (cashSearch.value || '').toLowerCase();
+
+            const f = cashFilter.value;
+
+            let items =
+                [...state.cash]
+                    .sort(
+                        (a, b) =>
+                            new Date(b.created_at) -
+                            new Date(a.created_at)
+                    );
+
+            items =
+                items.filter(
+                    x => !f || x.type === f
+                );
+
+            items =
+                items.filter(x => {
+
+                    const order =
+                        x.order_id
+                            ? state.orders.find(
+                                o => o.id === x.order_id
+                            )
+                            : null;
+
+                    const vehicle =
+                        order
+                            ? `${order.brand || ''} ${order.model || ''} ${order.plate || ''}`
+                            : '';
+
+                    const haystack =
+                        `
+                        ${x.description || ''}
+                        ${x.category || ''}
+                        ${x.method || ''}
+                        ${vehicle}
+                        `
+                            .toLowerCase();
+
+                    return haystack.includes(q);
+
+                });
+
+            cashList.innerHTML =
+
+                items.length
+
+                    ? items.map(x => {
+
+                        const order =
+                            x.order_id
+                                ? state.orders.find(
+                                    o => o.id === x.order_id
+                                )
+                                : null;
+
+                        const vehicle =
+                            order
+                                ? `${order.brand || ''} ${order.model || ''}`.trim()
+                                : 'Sin orden asociada';
+
+                        return `
+
+                            <div class="item">
+
+                                <div>
+
+                                    <div class="title">
+
+                                        ${x.description ||
+                                            (
+                                                x.type === 'ingreso'
+                                                    ? 'Ingreso'
+                                                    : 'Egreso'
+                                            )}
+
+                                    </div>
+
+                                    <div class="mini">
+
+                                        ${x.category || '-'}
+                                        ·
+                                        ${x.method || '-'}
+
+                                    </div>
+
+                                    <div class="mini">
+
+                                        ${new Date(
+                                            x.created_at
+                                        ).toLocaleString('es-UY')}
+
+                                    </div>
+
+                                    ${
+                                        x.order_id
+                                            ? `
+                                                <div
+                                                    class="mini"
+                                                    style="margin-top:6px;color:#ffebaf;"
+                                                >
+                                                    ${vehicle}
+                                                    ${
+                                                        order?.plate
+                                                            ? ` · ${order.plate}`
+                                                            : ''
+                                                    }
+                                                </div>
+                                            `
+                                            : ''
+                                    }
+
+                                </div>
+
+
+                                <div>
+
+                                    <span
+                                        class="pill ${
+                                            x.type === 'ingreso'
+                                                ? 'listo'
+                                                : 'nuevo'
+                                        }"
+                                    >
+                                        ${
+                                            x.type === 'ingreso'
+                                                ? 'Ingreso'
+                                                : 'Egreso'
+                                        }
+                                    </span>
+
+                                </div>
+
+                                <div class="money">
+
+                                    ${
+                                        money(
+                                            x.type === 'ingreso'
+                                                ? x.amount
+                                                : -x.amount
+                                        )
+                                    }
+
+                                </div>
+
+                                <div class="btns">
+
+                                    <button
+                                        class="bad"
+                                        onclick="deleteCash('${x.id}')"
+                                    >
+                                        Borrar
+                                    </button>
+
+                                </div>
+                            </div>
+                        `;
+                    }).join('')
+
+                    : `
+                        <div class="empty">
+                            Todavía no hay movimientos de caja.
+                        </div>
+                    `;
         }
+        
+        function populateCashOrders() {
+
+            const select =
+                document.getElementById('cashOrder');
+
+            if (!select) return;
+
+            const currentValue =
+                select.value;
+
+            const orders =
+                [...state.orders]
+                    .sort(
+                        (a, b) =>
+                            new Date(b.created_at) -
+                            new Date(a.created_at)
+                    );
+
+            select.innerHTML = `
+                <option value="">
+                    Sin orden asociada
+                </option>
+
+                ${orders.map(order => {
+
+                    const vehicle =
+                        `${order.brand || ''} ${order.model || ''}`
+                            .trim();
+
+                    const remaining =
+                        Math.max(
+                            0,
+                            Number(order.total || 0) -
+                            Number(order.paid || 0)
+                        );
+
+                    return `
+                        <option value="${order.id}">
+                            ${vehicle || 'Vehículo'}
+                            ${order.plate ? ` · ${order.plate}` : ''}
+                            · ${order.client_name || 'Sin cliente'}
+                            · Saldo ${money(remaining)}
+                        </option>
+                    `;
+
+                }).join('')}`;
+
+            if (
+                currentValue &&
+                orders.some(o => o.id === currentValue)
+            ) {
+                select.value = currentValue;
+            }
+
+        }
+
         function normalizePlate(plate) {
             return (plate || '')
                 .normalize('NFD')
@@ -3423,6 +4226,7 @@
         function renderAll() {
             renderDashboard();
             renderOrders();
+            populateCashOrders();
             renderCash();
             renderClients();
             renderPendingPayments()
@@ -3819,6 +4623,21 @@
             `;
         }
 
+        function canArchiveOrder(order) {
+
+            const total = Number(order.total || 0);
+
+            const paid = Number(order.paid || 0);
+
+            const remaining = Math.max(0, total - paid);
+
+            if (remaining > 0) {
+                return false;
+            }
+
+            return true;
+        }
+
         document.addEventListener('keydown', e => {
 
             const lightbox =
@@ -3840,6 +4659,21 @@
                 nextLightboxImage();
             }
         });
+
+        document
+            .getElementById('expenseAmount')
+            .addEventListener('input', function () {
+
+                const amount =
+                    Number(this.value || 0);
+
+                document
+                    .getElementById('expenseNewAmount')
+                    .textContent =
+                        money(amount);
+
+            });
+
         servicesMarkup();
         renderAll();
         setupImageDropZone();
