@@ -2520,7 +2520,7 @@
                 `${vehicle || 'Vehículo'} · ${order.plate || 'Sin matrícula'}`;
 
             document.getElementById('expenseOrderNumber').textContent =
-                `#${String(order.id).slice(0, 8)}`;
+                `#${String(order.plate).slice(0, 8)}`;
 
             document.getElementById('expenseAlreadySpent').textContent =
                 money(spent);
@@ -3957,6 +3957,10 @@
 
             const orders =
                 [...state.orders]
+                    .filter(order =>
+                        order.status !== 'listo' &&
+                        order.status !== 'entregado'
+                    )
                     .sort(
                         (a, b) =>
                             new Date(b.created_at) -
@@ -3998,7 +4002,6 @@
             ) {
                 select.value = currentValue;
             }
-
         }
 
         function normalizePlate(plate) {
