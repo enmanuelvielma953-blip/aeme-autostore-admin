@@ -1253,7 +1253,7 @@ function exportBalanceExcel() {
         XLSX.utils.book_append_sheet(
             workbook,
             summarySheet,
-            'Resumen'
+            'Resumen2'
         );
 
         XLSX.utils.book_append_sheet(
