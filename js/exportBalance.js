@@ -1,44 +1,3 @@
-function autoFitColumns(sheet, rows, minWidth = 10, maxWidth = 45) {
-
-    if (!sheet || !rows || !rows.length) {
-        return;
-    }
-
-    const columnCount = Math.max(
-        ...rows.map(row =>
-            Array.isArray(row) ? row.length : 0
-        )
-    );
-
-    sheet['!cols'] = sheet['!cols'] || [];
-
-    for (let col = 0; col < columnCount; col++) {
-
-        let maxLength = 0;
-
-        for (let row = 0; row < rows.length; row++) {
-
-            const value = rows[row]?.[col];
-
-            if (value === null || value === undefined) {
-                continue;
-            }
-
-            maxLength = Math.max(
-                maxLength,
-                String(value).length
-            );
-        }
-
-        sheet['!cols'][col] = {
-            wch: Math.min(
-                maxWidth,
-                Math.max(minWidth, maxLength + 2)
-            )
-        };
-    }
-}
-
 function exportBalanceExcel() {
 
     try {
@@ -933,372 +892,92 @@ function exportBalanceExcel() {
 
 
         /*
-            ============================================================
-            CREAR EXCEL
-            ============================================================
+        ============================================================
+        CREAR EXCEL
+        ============================================================
         */
 
-        const workbook =
-            XLSX.utils.book_new();
+        const workbook = XLSX.utils.book_new();
 
+        // 1. CREACIÓN DE HOJAS
+        const summarySheet = XLSX.utils.aoa_to_sheet(summaryRows);
+        const ordersSheet = XLSX.utils.aoa_to_sheet(orderRows);
+        const cashSheet = XLSX.utils.aoa_to_sheet(cashRows);
+        const weeklySheet = XLSX.utils.aoa_to_sheet(weeklyRows);
+        const monthlySheet = XLSX.utils.aoa_to_sheet(monthlyRows);
 
-        /*
-            HOJA RESUMEN
-        */
+        // 2. AGREGAR HOJAS AL LIBRO (Solo una vez)
+        XLSX.utils.book_append_sheet(workbook, summarySheet, 'Resumen');
+        XLSX.utils.book_append_sheet(workbook, ordersSheet, 'Balance órdenes');
+        XLSX.utils.book_append_sheet(workbook, cashSheet, 'Movimientos caja');
+        XLSX.utils.book_append_sheet(workbook, weeklySheet, 'Balance semanal');
+        XLSX.utils.book_append_sheet(workbook, monthlySheet, 'Balance mensual');
 
-        const summarySheet =
-            XLSX.utils.aoa_to_sheet(
-                summaryRows
-            );
-
-        XLSX.utils.book_append_sheet(
-            workbook,
-            summarySheet,
-            'Resumen'
-        );
-
-
-        /*
-            HOJA ÓRDENES
-        */
-
-        const ordersSheet =
-            XLSX.utils.aoa_to_sheet(
-                orderRows
-            );
-
-        XLSX.utils.book_append_sheet(
-            workbook,
-            ordersSheet,
-            'Balance órdenes'
-        );
-
-
-        /*
-            HOJA CAJA
-        */
-
-        const cashSheet =
-            XLSX.utils.aoa_to_sheet(
-                cashRows
-            );
-
-        XLSX.utils.book_append_sheet(
-            workbook,
-            cashSheet,
-            'Movimientos caja'
-        );
-
-
-        /*
-            HOJA SEMANAL
-        */
-
-        const weeklySheet =
-            XLSX.utils.aoa_to_sheet(
-                weeklyRows
-            );
-
-        XLSX.utils.book_append_sheet(
-            workbook,
-            weeklySheet,
-            'Balance semanal'
-        );
-
-
-        /*
-            HOJA MENSUAL
-        */
-
-        const monthlySheet =
-            XLSX.utils.aoa_to_sheet(
-                monthlyRows
-            );
-
-        XLSX.utils.book_append_sheet(
-            workbook,
-            monthlySheet,
-            'Balance mensual'
-        );
-
-
-        /*
-            ============================================================
-            FORMATO DE COLUMNAS
-            ============================================================
-        */
-
-        summarySheet['!cols'] = [
-            { wch: 35 },
-            { wch: 25 }
-        ];
-
+        // 3. ANCHOS DE COLUMNA MANUALES
+        summarySheet['!cols'] = [{ wch: 35 }, { wch: 25 }];
         ordersSheet['!cols'] = [
-
-            { wch: 38 },
-            { wch: 13 },
-            { wch: 25 },
-            { wch: 18 },
-            { wch: 14 },
-            { wch: 18 },
-            { wch: 14 },
-            { wch: 18 },
-            { wch: 18 },
-            { wch: 15 },
-            { wch: 15 },
-            { wch: 15 },
-            { wch: 18 },
-            { wch: 18 },
-            { wch: 12 },
-            { wch: 15 },
-            { wch: 35 }
-
+            { wch: 38 }, { wch: 13 }, { wch: 25 }, { wch: 18 }, { wch: 14 },
+            { wch: 18 }, { wch: 14 }, { wch: 18 }, { wch: 18 }, { wch: 15 },
+            { wch: 15 }, { wch: 15 }, { wch: 18 }, { wch: 18 }, { wch: 12 },
+            { wch: 15 }, { wch: 35 }
         ];
-
         cashSheet['!cols'] = [
-
-            { wch: 22 },
-            { wch: 12 },
-            { wch: 18 },
-            { wch: 22 },
-            { wch: 15 },
-            { wch: 40 },
-            { wch: 38 },
-            { wch: 25 },
-            { wch: 25 },
-            { wch: 15 }
-
+            { wch: 22 }, { wch: 12 }, { wch: 18 }, { wch: 22 }, { wch: 15 },
+            { wch: 40 }, { wch: 38 }, { wch: 25 }, { wch: 25 }, { wch: 15 }
         ];
-
         weeklySheet['!cols'] = [
-
-            { wch: 15 },
-            { wch: 15 },
-            { wch: 15 },
-            { wch: 15 },
-            { wch: 18 },
-            { wch: 20 },
-            { wch: 18 },
-            { wch: 18 }
-
+            { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
+            { wch: 18 }, { wch: 20 }, { wch: 18 }, { wch: 18 }
         ];
-
         monthlySheet['!cols'] = [
-
-            { wch: 25 },
-            { wch: 18 },
-            { wch: 18 },
-            { wch: 20 },
-            { wch: 18 },
-            { wch: 18 }
-
+            { wch: 25 }, { wch: 18 }, { wch: 18 },
+            { wch: 20 }, { wch: 18 }, { wch: 18 }
         ];
 
-
-        /*
-            ============================================================
-            FORMATO MONEDA
-            ============================================================
-        */
-
-        function formatCurrencyColumn(
-            sheet,
-            column,
-            startRow,
-            endRow
-        ) {
-
-            for (
-                let row = startRow;
-                row <= endRow;
-                row++
-            ) {
-
-                const cell =
-                    sheet[
-                        XLSX.utils.encode_cell({
-                            r: row,
-                            c: column
-                        })
-                    ];
-
+        // 4. FUNCIÓN AUXILIAR DE FORMATO
+        function formatCurrencyColumn(sheet, column, startRow, endRow) {
+            for (let row = startRow; row <= endRow; row++) {
+                const cellRef = XLSX.utils.encode_cell({ r: row, c: column });
+                const cell = sheet[cellRef];
                 if (cell) {
-
-                    cell.z =
-                        '"$" #,##0';
-
+                    cell.z = '"$" #,##0';
                 }
-
             }
-
         }
 
+        // 5. APLICAR FORMATOS DE MONEDA
+        // Balance Órdenes
+        [9, 10, 11, 12].forEach(col => {
+            formatCurrencyColumn(ordersSheet, col, 1, orderRows.length - 1);
+        });
 
-        /*
-            Balance órdenes
-        */
+        // Caja
+        formatCurrencyColumn(cashSheet, 4, 1, cashRows.length - 1);
 
-        formatCurrencyColumn(
-            ordersSheet,
-            9,
-            1,
-            orderRows.length - 1
-        );
-
-        formatCurrencyColumn(
-            ordersSheet,
-            10,
-            1,
-            orderRows.length - 1
-        );
-
-        formatCurrencyColumn(
-            ordersSheet,
-            11,
-            1,
-            orderRows.length - 1
-        );
-
-        formatCurrencyColumn(
-            ordersSheet,
-            12,
-            1,
-            orderRows.length - 1
-        );
-
-
-        /*
-            Caja
-        */
-
-        formatCurrencyColumn(
-            cashSheet,
-            4,
-            1,
-            cashRows.length - 1
-        );
-
-
-        /*
-            Semanal
-        */
-
+        // Semanal (columnas 3 a 7)
         for (let col = 3; col <= 7; col++) {
-
-            formatCurrencyColumn(
-                weeklySheet,
-                col,
-                1,
-                weeklyRows.length - 1
-            );
-
+            formatCurrencyColumn(weeklySheet, col, 1, weeklyRows.length - 1);
         }
 
-        /*
-            Mensual
-        */
-
-        for (let col = 3; col <= 7; col++) {
-
-            formatCurrencyColumn(
-                monthlySheet,
-                col,
-                1,
-                monthlyRows.length - 1
-            );
-
+        // Mensual (Ajustado a columnas válidas: 3 a 5)
+        for (let col = 3; col <= 5; col++) {
+            formatCurrencyColumn(monthlySheet, col, 1, monthlyRows.length - 1);
         }
 
+        // 6. CONGELAR ENCABEZADOS
+        const freezeHeader = { xSplit: 0, ySplit: 1 };
+        ordersSheet['!freeze'] = freezeHeader;
+        cashSheet['!freeze'] = freezeHeader;
+        weeklySheet['!freeze'] = freezeHeader;
+        monthlySheet['!freeze'] = freezeHeader;
 
-        /*
-            Ajustar anchos de columnas
-        */
+        // 7. DESCARGA
+        const fileName = `aeme-pro-balance-${todayLocalISO()}.xlsx`;
+        XLSX.writeFile(workbook, fileName);
 
-        autoFitColumns(summarySheet);
-        autoFitColumns(ordersSheet);
-        autoFitColumns(cashSheet);
-        autoFitColumns(weeklySheet);
-        autoFitColumns(monthlySheet);
-
-
-        /*
-            Congelar encabezados
-        */
-
-        ordersSheet['!freeze'] = {
-            xSplit: 0,
-            ySplit: 1
-        };
-
-        cashSheet['!freeze'] = {
-            xSplit: 0,
-            ySplit: 1
-        };
-
-        weeklySheet['!freeze'] = {
-            xSplit: 0,
-            ySplit: 1
-        };
-
-        monthlySheet['!freeze'] = {
-            xSplit: 0,
-            ySplit: 1
-        };
-
-
-        /*
-            Agregar hojas al Excel
-        */
-
-        XLSX.utils.book_append_sheet(
-            workbook,
-            summarySheet,
-            'Resumen2'
-        );
-
-        XLSX.utils.book_append_sheet(
-            workbook,
-            ordersSheet,
-            'Balance órdenes'
-        );
-
-        XLSX.utils.book_append_sheet(
-            workbook,
-            cashSheet,
-            'Caja'
-        );
-
-        XLSX.utils.book_append_sheet(
-            workbook,
-            weeklySheet,
-            'Semanal'
-        );
-
-        XLSX.utils.book_append_sheet(
-            workbook,
-            monthlySheet,
-            'Mensual'
-        );
-
-
-        /*
-            Descargar archivo
-        */
-
-        const fileName =
-            `aeme-pro-balance-${todayLocalISO()}.xlsx`;
-
-        XLSX.writeFile(
-            workbook,
-            fileName
-        );
-
-        alert(
-            'Excel generado correctamente.\n\n' +
-            `Archivo: ${fileName}`
-        );
+        alert(`Excel generado correctamente.\n\nArchivo: ${fileName}`);
     } catch (error) {
-        console.error('Error al generar el archivo Excel:', error);
-        alert('No se pudo generar el archivo de Excel.');
+        console.error('Error al preparar la exportación de Excel:', error);
+        alert('No se pudo preparar la exportación de Excel.');
     }
 }
