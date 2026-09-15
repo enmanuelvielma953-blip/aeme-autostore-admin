@@ -1638,10 +1638,34 @@
             </div>
             <div class="panel">
                 <h2>Respaldo</h2>
-                <div class="btns"><button class="sec" onclick="exportBackup()">Exportar backup</button><button
-                        class="sec" onclick="document.getElementById('importBackup').click()">Importar
-                        backup</button><input hidden type="file" id="importBackup" accept="application/json"
-                        onchange="importBackup(event)" /></div>
+
+                <div class="btns">
+
+                    <button class="sec" onclick="exportBackup()">
+                        Exportar backup
+                    </button>
+
+                    <button class="sec" onclick="document.getElementById('importBackup').click()">
+                        Importar backup
+                    </button>
+
+                    <button class="good" onclick="exportBalanceExcel()">
+                        Exportar balance Excel
+                    </button>
+
+                    <input
+                        hidden
+                        type="file"
+                        id="importBackup"
+                        accept="application/json"
+                        onchange="importBackup(event)"
+                    />
+
+                </div>
+
+                <div class="small-note">
+                    Exporta el balance de órdenes, cobros, gastos, semanas y meses en Excel.
+                </div>
             </div>
             <div class="panel mt8">
                 <h2>Mantenimiento</h2>
@@ -1957,8 +1981,10 @@
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <script src="./js/supabase.js"></script>
     <script src="./js/images.js"></script>
+    <script src="./js/exportBalance.js"></script>
     <script>
         const fmt = new Intl.NumberFormat('es-UY', { style: 'currency', currency: 'UYU', maximumFractionDigits: 0 });
         const STORAGE_KEY = 'aeme_pro_state_v1';
