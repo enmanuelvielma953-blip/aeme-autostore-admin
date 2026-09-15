@@ -1,3 +1,44 @@
+function autoFitColumns(sheet, rows, minWidth = 10, maxWidth = 45) {
+
+    if (!sheet || !rows || !rows.length) {
+        return;
+    }
+
+    const columnCount = Math.max(
+        ...rows.map(row =>
+            Array.isArray(row) ? row.length : 0
+        )
+    );
+
+    sheet['!cols'] = sheet['!cols'] || [];
+
+    for (let col = 0; col < columnCount; col++) {
+
+        let maxLength = 0;
+
+        for (let row = 0; row < rows.length; row++) {
+
+            const value = rows[row]?.[col];
+
+            if (value === null || value === undefined) {
+                continue;
+            }
+
+            maxLength = Math.max(
+                maxLength,
+                String(value).length
+            );
+        }
+
+        sheet['!cols'][col] = {
+            wch: Math.min(
+                maxWidth,
+                Math.max(minWidth, maxLength + 2)
+            )
+        };
+    }
+}
+
 function exportBalanceExcel() {
 
     try {
