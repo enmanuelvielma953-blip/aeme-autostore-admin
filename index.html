@@ -900,7 +900,7 @@
         }
 
         @media (max-width: 380px) {
-            .item-dashboard>.btns {
+            .item-dashboard > .btns {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
             }
         }
@@ -4983,11 +4983,34 @@
         }
 
         function renderDashboard() {
-            const open = state.orders.filter(o => o.status !== 'entregado').reduce((a, o) => a + Math.max(0, Number(o.total || 0) - Number(o.paid || 0)), 0),
-                paid = state.orders.reduce((a, o) => a + Number(o.paid || 0), 0),
+            const open = state.orders
+                .filter(o => o.status !== 'entregado')
+                .reduce((a, o) => a + Math.max(0, Number(o.total || 0) - Number(o.paid || 0)), 0),
+
+                now = new Date(),
+                year = now.getFullYear(),
+                month = now.getMonth(),
+
+                paid = state.cash
+                    .filter(x => {
+                        const date = new Date(x.created_at);
+                        const now = new Date();
+
+                        return date.getFullYear() === now.getFullYear() &&
+                            date.getMonth() === now.getMonth() &&
+                            x.type === 'ingreso';
+                    })
+                    .reduce((a, x) => a + Number(x.amount || 0), 0),
+                
+                
                 active = state.orders.filter(o => o.status !== 'entregado').length,
+                
                 today = todayLocalISO(),
-                cashDay = state.cash.filter(x => (x.created_at || '').slice(0, 10) === today).reduce((a, x) => a + (x.type === 'ingreso' ? Number(x.amount || 0) : -Number(x.amount || 0)), 0);
+                
+                cashDay = state.cash
+                    .filter(x => (x.created_at || '').slice(0, 10) === today)
+                    .reduce((a, x) => a + (x.type === 'ingreso' ? Number(x.amount || 0) : -Number(x.amount || 0)), 0);
+            
             kpiOpen.textContent = money(open);
             kpiPaid.textContent = money(paid);
             kpiActive.textContent = active;
