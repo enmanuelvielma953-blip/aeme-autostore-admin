@@ -151,11 +151,11 @@
         h1 {
 
             margin: 0;
-
+            
             font-size: 22px;
-
+            
             letter-spacing: -.6px;
-
+        
         }
 
         .sub {
@@ -604,7 +604,7 @@
 
         .item {
             display: grid;
-            grid-template-columns: auto .95fr .75fr auto;
+            grid-template-columns: 1.35fr .95fr .75fr auto;
             gap: 10px;
             align-items: start;
             padding: 14px;
@@ -2063,12 +2063,14 @@
                             <div class="field"><label>Matrícula</label><input id="plate" placeholder="ABC 1234" /></div>
                         </div>
                         <div class="row">
-                            <div class="field"><label>Estado</label><select id="status">
+                            <div class="field"><label>Estado</label>
+                                <select id="status">
                                     <option value="nuevo">Nuevo</option>
                                     <option value="proceso">En proceso</option>
                                     <option value="listo">Listo para entregar</option>
                                     <option value="entregado">Entregado</option>
-                                </select></div>
+                                </select>
+                            </div>
                             <div class="field"><label>Entrega prometida</label><input id="dueDate" type="date" /></div>
                         </div>
                         <div class="field"><label>Servicios sugeridos</label>
@@ -2135,8 +2137,6 @@
                     </div>
                 </div>
             </div>
-            <div class="install-tip">En iPhone: abrí el link en Safari y tocá <strong>Compartir → Agregar a pantalla de
-                    inicio</strong>. En PC podés usarlo desde navegador o instalarlo si el navegador lo ofrece.</div>
         </section>
         <section id="ordersView" class="view hidden">
             <div class="panel">
@@ -2733,6 +2733,7 @@
         let selectedServiceIds = [];
         let editingOrderId = null;
         let currentUser = null;
+        const orderStatusSelect = document.getElementById('status');
 
 
         const presetServices = [
@@ -2982,7 +2983,7 @@
                     model: model.value.trim(),
                     plate: plate.value.trim(),
 
-                    status: status.value || 'nuevo',
+                    status: orderStatusSelect.value || 'nuevo',
 
                     total: Number(totalAmount.value || 0),
                     paid: Number(paidAmount.value || 0),
@@ -2997,7 +2998,7 @@
                         ),
 
                     images: [],
-
+                    
                     archived: false
                 };
 
@@ -3144,7 +3145,7 @@
             model.value = o.model || '';
             plate.value = o.plate || '';
 
-            status.value = o.status || 'nuevo';
+            orderStatusSelect.value = o.status || 'nuevo';
 
             dueDate.value = o.due_date || '';
 
@@ -4517,7 +4518,7 @@
             cashAmount.value = '';
             cashDescription.value = '';
             const orderSelect = document.getElementById('cashOrder');
-            
+
             if (orderSelect) {
                 orderSelect.value = '';
             }
@@ -4615,11 +4616,11 @@
                                     <div class="title">
 
                                         ${x.description ||
-                                            (
-                                                x.type === 'ingreso'
-                                                    ? 'Ingreso'
-                                                    : 'Egreso'
-                                            )}
+                                        (
+                                            x.type === 'ingreso'
+                                                ? 'Ingreso'
+                                                : 'Egreso'
+                                        )}
 
                                     </div>
 
@@ -4649,12 +4650,12 @@
                                                     ${vehicle}
                                                     ${
                                                         order?.plate
-                                                            ? ` · ${order.plate}`
-                                                            : ''
+                                                        ? ` · ${order.plate}`
+                                                        : ''
                                                     }
                                                 </div>
                                             `
-                                            : ''
+                                        : ''
                                     }
 
                                 </div>
@@ -4665,14 +4666,14 @@
                                     <span
                                         class="pill ${
                                             x.type === 'ingreso'
-                                                ? 'listo'
-                                                : 'nuevo'
+                                            ? 'listo'
+                                            : 'nuevo'
                                         }"
                                     >
                                         ${
                                             x.type === 'ingreso'
-                                                ? 'Ingreso'
-                                                : 'Egreso'
+                                            ? 'Ingreso'
+                                            : 'Egreso'
                                         }
                                     </span>
 
@@ -4683,8 +4684,8 @@
                                     ${
                                         money(
                                             x.type === 'ingreso'
-                                                ? x.amount
-                                                : -x.amount
+                                            ? x.amount
+                                            : -x.amount
                                         )
                                     }
 
@@ -4710,7 +4711,7 @@
                         </div>
                     `;
         }
-        
+
         function populateCashOrders() {
 
             const select =
@@ -4740,18 +4741,18 @@
 
                 ${orders.map(order => {
 
-                    const vehicle =
-                        `${order.brand || ''} ${order.model || ''}`
-                            .trim();
+                const vehicle =
+                    `${order.brand || ''} ${order.model || ''}`
+                        .trim();
 
-                    const remaining =
-                        Math.max(
-                            0,
-                            Number(order.total || 0) -
-                            Number(order.paid || 0)
-                        );
+                const remaining =
+                    Math.max(
+                        0,
+                        Number(order.total || 0) -
+                        Number(order.paid || 0)
+                    );
 
-                    return `
+                return `
                         <option value="${order.id}">
                             ${vehicle || 'Vehículo'}
                             ${order.plate ? ` · ${order.plate}` : ''}
@@ -4760,7 +4761,7 @@
                         </option>
                     `;
 
-                }).join('')}`;
+            }).join('')}`;
 
             if (
                 currentValue &&
@@ -5439,7 +5440,7 @@
                 document
                     .getElementById('expenseNewAmount')
                     .textContent =
-                        money(amount);
+                    money(amount);
 
             });
 
